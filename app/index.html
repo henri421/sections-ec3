@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="theme-color" content="#f7f7f6" />
+    <link rel="icon" href="./icone.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icone-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>sections-ec3 — profils acier, EN 1993-1-1</title>
+  </head>
+  <body>
+    <nav class="barre" aria-label="suite d'outils">
+      <div class="barre-corps">
+        <span class="barre-nom">Aedificium &middot; Acier</span>
+        <a class="barre-lien" href="https://henri421.github.io/WebAedificium/" target="_blank" rel="noopener">Suite Aedificium &#8599;</a>
+      </div>
+    </nav>
+
+    <header>
+      <h1>sections-ec3</h1>
+      <p class="sous-titre">
+        Profils acier selon l'EN 1993-1-1 : proprietes recalculees, classification sous la sollicitation reelle,
+        resistances de section, flambement, deversement et flexion composee (annexe B).
+      </p>
+      <p class="avertissement">
+        Aide au calcul : l'outil constate, il ne prescrit pas. Valeurs recommandees, sans annexe nationale.
+        Le moment critique M<sub>cr</sub> n'est pas donne par la norme : son expression est hors norme et signalee comme telle.
+      </p>
+    </header>
+
+    <main>
+      <section id="saisie" aria-label="saisie">
+        <form id="formulaire" autocomplete="off">
+          <fieldset>
+            <legend>Profil</legend>
+            <label><span>Section</span>
+              <select data-champ="source">
+                <option value="catalogue">profil lamine du catalogue</option>
+                <option value="I-soude">I soude (PRS)</option>
+                <option value="tube-rectangulaire">tube rectangulaire</option>
+                <option value="tube-circulaire">tube circulaire</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="catalogue">
+              <label><span>Profil</span>
+                <select data-champ="nom_catalogue">
+                <optgroup label="IPE"><option value="IPE 80">IPE 80</option><option value="IPE 100">IPE 100</option><option value="IPE 120">IPE 120</option><option value="IPE 140">IPE 140</option><option value="IPE 160">IPE 160</option><option value="IPE 180">IPE 180</option><option value="IPE 200">IPE 200</option><option value="IPE 220">IPE 220</option><option value="IPE 240">IPE 240</option><option value="IPE 270">IPE 270</option><option value="IPE 300">IPE 300</option><option value="IPE 330">IPE 330</option><option value="IPE 360">IPE 360</option><option value="IPE 400">IPE 400</option><option value="IPE 450">IPE 450</option><option value="IPE 500">IPE 500</option><option value="IPE 550">IPE 550</option><option value="IPE 600">IPE 600</option></optgroup>
+                <optgroup label="HEA"><option value="HEA 100">HEA 100</option><option value="HEA 120">HEA 120</option><option value="HEA 140">HEA 140</option><option value="HEA 160">HEA 160</option><option value="HEA 180">HEA 180</option><option value="HEA 200">HEA 200</option><option value="HEA 220">HEA 220</option><option value="HEA 240">HEA 240</option><option value="HEA 260">HEA 260</option><option value="HEA 280">HEA 280</option><option value="HEA 300">HEA 300</option><option value="HEA 320">HEA 320</option><option value="HEA 340">HEA 340</option><option value="HEA 360">HEA 360</option><option value="HEA 400">HEA 400</option><option value="HEA 450">HEA 450</option><option value="HEA 500">HEA 500</option></optgroup>
+                <optgroup label="HEB"><option value="HEB 100">HEB 100</option><option value="HEB 120">HEB 120</option><option value="HEB 140">HEB 140</option><option value="HEB 160">HEB 160</option><option value="HEB 180">HEB 180</option><option value="HEB 200">HEB 200</option><option value="HEB 220">HEB 220</option><option value="HEB 240">HEB 240</option><option value="HEB 260">HEB 260</option><option value="HEB 280">HEB 280</option><option value="HEB 300">HEB 300</option><option value="HEB 320">HEB 320</option><option value="HEB 340">HEB 340</option><option value="HEB 360">HEB 360</option><option value="HEB 400">HEB 400</option><option value="HEB 450">HEB 450</option><option value="HEB 500">HEB 500</option></optgroup>
+                </select>
+              </label>
+            </div>
+            <div class="groupe" data-groupe="hb">
+              <label><span>h (mm)</span><input type="text" inputmode="decimal" data-champ="h" /></label>
+              <label><span>b (mm)</span><input type="text" inputmode="decimal" data-champ="b" /></label>
+            </div>
+            <div class="groupe" data-groupe="soude">
+              <label><span>t<sub>w</sub> (mm)</span><input type="text" inputmode="decimal" data-champ="tw" /></label>
+              <label><span>t<sub>f</sub> (mm)</span><input type="text" inputmode="decimal" data-champ="tf" /></label>
+              <label><span>gorge des cordons a (mm)</span><input type="text" inputmode="decimal" data-champ="a" /></label>
+            </div>
+            <div class="groupe" data-groupe="chs">
+              <label><span>d (mm)</span><input type="text" inputmode="decimal" data-champ="d" /></label>
+            </div>
+            <div class="groupe" data-groupe="tube">
+              <label><span>t (mm)</span><input type="text" inputmode="decimal" data-champ="t" /></label>
+              <label><span>Finition</span>
+                <select data-champ="finition">
+                  <option value="chaud">finie a chaud (EN 10210)</option>
+                  <option value="froid">formee a froid (EN 10219)</option>
+                </select>
+              </label>
+            </div>
+            <label><span>Nuance</span>
+              <select data-champ="nuance">
+                <option value="S235">S235</option><option value="S275">S275</option><option value="S355">S355</option><option value="S420">S420</option><option value="S460">S460</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Sollicitations de calcul</legend>
+            <label><span>N<sub>Ed</sub>, compression + (kN)</span><input type="text" inputmode="decimal" data-champ="n" /></label>
+            <label><span>M<sub>y,Ed</sub> (kN.m)</span><input type="text" inputmode="decimal" data-champ="my" /></label>
+            <label><span>M<sub>z,Ed</sub> (kN.m)</span><input type="text" inputmode="decimal" data-champ="mz" /></label>
+            <label><span>V<sub>z,Ed</sub> (kN)</span><input type="text" inputmode="decimal" data-champ="vz" /></label>
+            <label><span>V<sub>y,Ed</sub> (kN)</span><input type="text" inputmode="decimal" data-champ="vy" /></label>
+            <label><span>&psi;<sub>y</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_y" /></label>
+            <label><span>&psi;<sub>z</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_z" /></label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Element</legend>
+            <label><span>L<sub>cr,y</sub> (m)</span><input type="text" inputmode="decimal" data-champ="lcry" /></label>
+            <label><span>L<sub>cr,z</sub> (m)</span><input type="text" inputmode="decimal" data-champ="lcrz" /></label>
+            <label><span>L entre maintiens lateraux (m)</span><input type="text" inputmode="decimal" data-champ="llt" /></label>
+            <label class="case"><input type="checkbox" data-champ="empeche" /><span>membrure comprimee maintenue en continu</span></label>
+            <label><span>Moment entre maintiens</span>
+              <select data-champ="diagramme">
+                <option value="lineaire">lineaire (moments d'extremite)</option>
+                <option value="repartie">charge repartie, appuis simples</option>
+                <option value="concentree-milieu">charge concentree a mi-portee</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="lineaire">
+              <label><span>&psi; du deversement</span><input type="text" inputmode="decimal" data-champ="psi_lt" /></label>
+            </div>
+            <div class="groupe" data-groupe="charge">
+              <label><span>Point d'application</span>
+                <select data-champ="point">
+                  <option value="centre">centre de cisaillement</option>
+                  <option value="semelle-superieure">semelle superieure (destabilisant)</option>
+                  <option value="semelle-inferieure">semelle inferieure</option>
+                </select>
+              </label>
+            </div>
+            <label><span>M<sub>cr</sub> saisi (kN.m), facultatif</span><input type="text" inputmode="decimal" data-champ="mcr" placeholder="expression hors norme" /></label>
+          </fieldset>
+          <p data-role="erreur-saisie" class="erreur" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <div class="colonne">
+        <section id="resultat" aria-label="resultat">
+          <h2>Resultat</h2>
+          <p data-role="erreur" class="erreur" role="alert" hidden></p>
+          <div data-role="mcr"></div>
+          <div data-role="verdict"></div>
+          <div data-role="verifications"></div>
+        </section>
+        <section id="profil" aria-label="profil">
+          <h2>Profil, proprietes et classe</h2>
+          <div class="deux">
+            <div data-role="dessin"></div>
+            <div data-role="proprietes"></div>
+          </div>
+          <div data-role="classification"></div>
+        </section>
+        <section id="instabilites" aria-label="instabilites">
+          <h2>Instabilites (§6.3)</h2>
+          <div data-role="instabilites"></div>
+        </section>
+        <section id="sorties" aria-label="sorties">
+          <h2>Sorties</h2>
+          <div class="boutons">
+            <button type="button" data-action="exporter-dessin">Profil (SVG)</button>
+            <button type="button" data-action="exporter-resultats">Resultats (CSV)</button>
+            <button type="button" data-action="exporter-note">Note de calcul (HTML imprimable)</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        Hors perimetre : sections de classe 4 (EN 1993-1-5 §4) ; annexe A du §6.3.3 ; torsion ; sections
+        monosymetriques ; flambement par torsion et flexion-torsion ; voilement par cisaillement au-dela du critere
+        du §6.2.6(6) ; assemblages (voir assemblages-ec3).
+      </p>
+    </footer>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
