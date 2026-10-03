@@ -8,8 +8,9 @@
  * fonction prend donc les actions en entree.
  */
 
-import type { Materiau, ProfilDoublementSymetrique } from '../model/profil';
-import { epsilon } from '../model/profil';
+import type { Materiau, Profil, ProfilDoublementSymetrique, ProfilL, ProfilU } from '../model/profil';
+import { epaisseurAileRacine, epsilon, estDoublementSymetrique } from '../model/profil';
+import { corniereOrientee } from '../proprietes/formes';
 import type { Proprietes } from '../proprietes/brutes';
 import { fr } from '../norms/profil';
 
@@ -90,7 +91,11 @@ export function distributionAme(c: number, t: number, fy: number, prop: Propriet
  * uniforme (9 / 10 / 14 epsilon) quelle que soit la sollicitation, sans
  * profiter des limites plus larges du gradient de M_z.
  */
-export function classifier(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, a: ActionsClassification): Classification {
+export function classifier(p: Profil, m: Materiau, prop: Proprietes, a: ActionsClassification): Classification {
+  return estDoublementSymetrique(p) ? classifierSymetrique(p, m, prop, a) : classifierNonSymetrique(p, m, prop, a);
+}
+
+function classifierSymetrique(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, a: ActionsClassification): Classification {
   const eps = epsilon(m.fy);
   const parois: ClasseParoi[] = [];
   const traction = a.N < 0 && a.My === 0 && a.Mz === 0;
@@ -147,6 +152,80 @@ export function classifier(p: ProfilDoublementSymetrique, m: Materiau, prop: Pro
       const lim: [number, number, number] = [9 * eps, 10 * eps, 14 * eps];
       parois.push({ paroi: 'semelle (console)', c, t: p.tf, elancement: c / p.tf, limites: lim, classe: traction ? 1 : classeDe(c / p.tf, lim), detail: 'paroi en console comprimee, tableau 5.2 feuille 2' });
     }
+  }
+  const gouv = parois.reduce((x, y) => (y.classe > x.classe ? y : x));
+  return { classe: gouv.classe, gouvernante: gouv.paroi, parois };
+}
+
+/** Paroi en console comprimee uniformement, tableau 5.2 feuille 2 : 9 / 10 / 14 epsilon. */
+function paroiConsole(nom: string, c: number, t: number, eps: number, traction: boolean): ClasseParoi {
+  const lim: [number, number, number] = [9 * eps, 10 * eps, 14 * eps];
+  return { paroi: nom, c, t, elancement: c / t, limites: lim, classe: traction ? 1 : classeDe(c / t, lim), detail: 'paroi en console, compression uniforme (tableau 5.2 feuille 2)' };
+}
+
+/**
+ * Corniere, tableau 5.2 feuille 3 (section comprimee) : classe 3 si
+ * h/t <= 15 epsilon et (b + h)/(2t) <= 11,5 epsilon, classe 4 sinon — pas de
+ * classe 1 ou 2 en compression. Ailes aussi classees en console (« refer
+ * also to outstand flanges »), c = aile - t - r_1. La note excluant les
+ * cornieres en contact continu avec d'autres elements n'est pas invoquee
+ * pour les 2L, du cote de la securite.
+ */
+function paroisCorniere(c: ProfilL, prefixe: string, eps: number, comprime: boolean, traction: boolean): ClasseParoi[] {
+  const res: ClasseParoi[] = [];
+  if (comprime) {
+    const grand = Math.max(c.h, c.b);
+    const l1: [number, number, number] = [0, 0, 15 * eps];
+    const l2: [number, number, number] = [0, 0, 11.5 * eps];
+    const detail = 'corniere comprimee (tableau 5.2 feuille 3) : pas de classe 1 ou 2';
+    res.push({ paroi: `${prefixe}h / t`, c: grand, t: c.t, elancement: grand / c.t, limites: l1, classe: classeDe(grand / c.t, l1), detail });
+    res.push({ paroi: `${prefixe}(b + h) / 2t`, c: (c.b + c.h) / 2, t: c.t, elancement: (c.b + c.h) / (2 * c.t), limites: l2, classe: classeDe((c.b + c.h) / (2 * c.t), l2), detail });
+  }
+  res.push(paroiConsole(`${prefixe}aile h (console)`, c.h - c.t - c.r1, c.t, eps, traction));
+  res.push(paroiConsole(`${prefixe}aile b (console)`, c.b - c.t - c.r1, c.t, eps, traction));
+  return res;
+}
+
+/**
+ * Profil en U (ou 2U) : ame en paroi interne sous N et M_y (alpha, psi comme
+ * pour les I, l'axe y etant de symetrie), classee en compression uniforme
+ * des que M_z est non nul (l'ame est alors une semelle) ; ailes en console
+ * comprimees uniformement, c = b - t_w - r_1.
+ */
+function paroisU(u: ProfilU, nAmes: number, eps: number, fy: number, prop: Proprietes, a: ActionsClassification, traction: boolean): ClasseParoi[] {
+  const cAme = u.h - 2 * epaisseurAileRacine(u) - 2 * u.r1;
+  const res: ClasseParoi[] = [];
+  if (a.Mz !== 0) {
+    const lim: [number, number, number] = [33 * eps, 38 * eps, 42 * eps];
+    res.push({ paroi: 'ame', c: cAme, t: u.tw, elancement: cAme / u.tw, limites: lim, classe: classeDe(cAme / u.tw, lim), detail: 'paroi interne comprimee (M_z non nul)' });
+  } else {
+    // alpha : effort normal reparti sur les n ames.
+    const { alpha, psi } = distributionAme(cAme, nAmes * u.tw, fy, prop, a);
+    const lim = limitesParoiInterne(eps, alpha, psi);
+    res.push({ paroi: 'ame', c: cAme, t: u.tw, elancement: cAme / u.tw, limites: lim, classe: traction ? 1 : classeDe(cAme / u.tw, lim), detail: `paroi interne, alpha = ${fr(alpha, 3)}, psi = ${fr(psi, 3)}` });
+  }
+  res.push(paroiConsole('aile (console)', u.b - u.tw - u.r1, u.tf, eps, traction));
+  return res;
+}
+
+function classifierNonSymetrique(p: Exclude<Profil, ProfilDoublementSymetrique>, m: Materiau, prop: Proprietes, a: ActionsClassification): Classification {
+  const eps = epsilon(m.fy);
+  const traction = a.N < 0 && a.My === 0 && a.Mz === 0;
+  const comprime = a.N > 0;
+  let parois: ClasseParoi[];
+  switch (p.type) {
+    case 'L':
+      parois = paroisCorniere(p, '', eps, comprime, traction);
+      break;
+    case '2L':
+      parois = paroisCorniere(corniereOrientee(p.corniere, p.accolee), 'corniere, ', eps, comprime, traction);
+      break;
+    case 'U':
+      parois = paroisU(p, 1, eps, m.fy, prop, a, traction);
+      break;
+    case '2U':
+      parois = paroisU(p.profilU, 2, eps, m.fy, prop, a, traction);
+      break;
   }
   const gouv = parois.reduce((x, y) => (y.classe > x.classe ? y : x));
   return { classe: gouv.classe, gouvernante: gouv.paroi, parois };

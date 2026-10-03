@@ -25,6 +25,7 @@ export { proprietes, rayonsTube, type Proprietes } from './proprietes/brutes';
 export { familles, profilCatalogue, corniereCatalogue, profilUCatalogue, provenance, type FamilleCatalogue, type TypeFamille } from './catalogue/charger';
 export { arrondir, integrales, axesPrincipaux, inertieAxe, modulePlastique, distancesExtremes, type Point, type Sommet, type Integrales } from './proprietes/contour';
 export { contours, contourL, contourU, corniereOrientee, torsion, excentriciteCisaillementU, proprietesNonSymetriques, type ProfilNonSymetrique, type Torsion } from './proprietes/formes';
+export { sectionEfficace, facteurRho, type SectionEfficace, type ParoiEfficace, type TypeParoi } from './classification/efficace';
 export { classifier, limitesParoiInterne, distributionAme, type Classe, type Classification, type ClasseParoi } from './classification/classifier';
 export {
   aireCisaillement,
