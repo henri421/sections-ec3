@@ -85,8 +85,26 @@
             <label><span>M<sub>z,Ed</sub> (kN.m)</span><input type="text" inputmode="decimal" data-champ="mz" /></label>
             <label><span>V<sub>z,Ed</sub> (kN)</span><input type="text" inputmode="decimal" data-champ="vz" /></label>
             <label><span>V<sub>y,Ed</sub> (kN)</span><input type="text" inputmode="decimal" data-champ="vy" /></label>
-            <label><span>&psi;<sub>y</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_y" /></label>
-            <label><span>&psi;<sub>z</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_z" /></label>
+            <label><span>Diagramme de M<sub>y</sub> (C<sub>my</sub>)</span>
+              <select data-champ="diagramme_y">
+                <option value="lineaire">lineaire (moments d'extremite)</option>
+                <option value="repartie">charge repartie, appuis simples</option>
+                <option value="concentree-milieu">charge concentree a mi-portee</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="lineaire-y">
+              <label><span>&psi;<sub>y</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_y" /></label>
+            </div>
+            <label><span>Diagramme de M<sub>z</sub> (C<sub>mz</sub>)</span>
+              <select data-champ="diagramme_z">
+                <option value="lineaire">lineaire (moments d'extremite)</option>
+                <option value="repartie">charge repartie, appuis simples</option>
+                <option value="concentree-milieu">charge concentree a mi-portee</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="lineaire-z">
+              <label><span>&psi;<sub>z</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_z" /></label>
+            </div>
           </fieldset>
 
           <fieldset>

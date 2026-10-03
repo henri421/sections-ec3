@@ -3,7 +3,7 @@ import { classifier, limitesParoiInterne, materiau, profilCatalogue, proprietes 
 
 function classe(nom: string, nuance: 'S235' | 'S355', N: number, My: number) {
   const p = profilCatalogue(nom);
-  return classifier(p, materiau(nuance, p), proprietes(p), { N, My });
+  return classifier(p, materiau(nuance, p), proprietes(p), { N, My, Mz: 0 });
 }
 
 describe('classification, tableau 5.2', () => {
@@ -39,8 +39,18 @@ describe('classification, tableau 5.2', () => {
 
   it('tube circulaire : d/t compare a 50/70/90 epsilon^2', () => {
     const p = { type: 'tube-circulaire', nom: 'CHS', d: 168.3, t: 3, finition: 'chaud' } as const;
-    const r = classifier(p, materiau('S355', p), proprietes(p), { N: 100, My: 0 });
+    const r = classifier(p, materiau('S355', p), proprietes(p), { N: 100, My: 0, Mz: 0 });
     // d/t = 56,1 ; epsilon^2 = 0,662 : limites 33,1 / 46,3 / 59,6 -> classe 3
     expect(r.classe).toBe(3);
+  });
+
+  it('tube rectangulaire 300 x 100 x 6 S235 : classe 1 sous M_y, classe 4 sous M_z (parois laterales comprimees)', () => {
+    const p = { type: 'tube-rectangulaire', nom: 'RHS', h: 300, b: 100, t: 6, finition: 'chaud' } as const;
+    const m = materiau('S235', p);
+    // (h - 3t) / t = 282 / 6 = 47 : <= 72 en flexion, > 42 en compression uniforme.
+    expect(classifier(p, m, proprietes(p), { N: 0, My: 50, Mz: 0 }).classe).toBe(1);
+    const r = classifier(p, m, proprietes(p), { N: 0, My: 0, Mz: 20 });
+    expect(r.classe).toBe(4);
+    expect(r.gouvernante).toContain('laterale');
   });
 });

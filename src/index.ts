@@ -32,5 +32,5 @@ export {
   type Deversement,
   type MomentCritique,
 } from './instabilite/deversement';
-export { interaction633, coefficientCm, type Interaction633 } from './instabilite/flexion-composee';
+export { interaction633, coefficientCm, coefficientCmDiagramme, type Interaction633 } from './instabilite/flexion-composee';
 export { verifierElement, type DonneesElement, type ResultatElement, type Verification } from './domaines/verifier-element';

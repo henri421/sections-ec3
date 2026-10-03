@@ -76,6 +76,8 @@ function ajusterLesGroupes(m: ModeleSaisie): void {
     tube: m.source === 'tube-rectangulaire' || m.source === 'tube-circulaire',
     lineaire: m.diagramme === 'lineaire',
     charge: m.diagramme !== 'lineaire',
+    'lineaire-y': m.diagrammeY === 'lineaire',
+    'lineaire-z': m.diagrammeZ === 'lineaire',
   };
   for (const [g, visible] of Object.entries(vis)) exige<HTMLElement>(`[data-groupe="${g}"]`).hidden = !visible;
 }

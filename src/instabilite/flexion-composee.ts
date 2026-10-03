@@ -14,10 +14,26 @@ import type { Classe } from '../classification/classifier';
 import type { Profil } from '../model/profil';
 import type { ProfilEc3 } from '../norms/profil';
 import { fr } from '../norms/profil';
+import type { DiagrammeLT } from './deversement';
 
 /** C_m pour un moment lineaire, tableau B.3 : 0,6 + 0,4 psi >= 0,4. */
 export function coefficientCm(psi: number): number {
   return Math.max(0.4, 0.6 + 0.4 * psi);
+}
+
+/**
+ * C_m selon le diagramme, tableau B.3 :
+ *   moments d'extremite (lineaire)            : 0,6 + 0,4 psi >= 0,4 ;
+ *   charge repartie, appuis simples (M_h = 0) : 0,95 + 0,05 alpha_h = 0,95 ;
+ *   charge concentree, appuis simples         : 0,90 + 0,10 alpha_h = 0,90.
+ * Appliquer la formule lineaire a une charge transversale (psi = 0 donnant
+ * 0,6) serait non conservatif.
+ */
+export function coefficientCmDiagramme(d: DiagrammeLT): number {
+  if (d.type === 'repartie') return 0.95;
+  if (d.type === 'concentree-milieu') return 0.9;
+  if (!Number.isFinite(d.psi) || d.psi < -1 || d.psi > 1) throw new Error('psi doit etre compris entre -1 et 1 (-).');
+  return coefficientCm(d.psi);
 }
 
 export interface EntreesInteraction {

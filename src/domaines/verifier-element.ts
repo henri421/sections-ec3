@@ -16,7 +16,7 @@ import { classifier, type Classification } from '../classification/classifier';
 import { interactionSection, resistancesSection, verifierVoilementCisaillement, type InteractionSection, type ResistancesSection } from '../resistances/section';
 import { flambement, type Flambement } from '../instabilite/flambement';
 import { deversement, type Deversement, type DiagrammeLT, type PointApplication } from '../instabilite/deversement';
-import { coefficientCm, interaction633, type Interaction633 } from '../instabilite/flexion-composee';
+import { coefficientCmDiagramme, interaction633, type Interaction633 } from '../instabilite/flexion-composee';
 import type { ProfilEc3 } from '../norms/profil';
 import { fr, verifierProfil } from '../norms/profil';
 
@@ -40,9 +40,9 @@ export interface DonneesElement {
   pointApplication: PointApplication;
   /** M_cr calcule par ailleurs (kN.m), ou null pour l'expression hors norme. */
   McrSaisi: number | null;
-  /** Rapports des moments d'extremite pour C_my et C_mz (tableau B.3, moment lineaire). */
-  psi_y: number;
-  psi_z: number;
+  /** Diagrammes du moment M_y et M_z, pour C_my et C_mz (tableau B.3). */
+  diagrammeY: DiagrammeLT;
+  diagrammeZ: DiagrammeLT;
 }
 
 export interface Verification {
@@ -73,7 +73,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
   verifierProfil(profil);
   const prop = proprietes(d.profil);
   const mat = materiau(d.nuance, d.profil);
-  const classification = classifier(d.profil, mat, prop, { N: d.N, My: d.My });
+  const classification = classifier(d.profil, mat, prop, { N: d.N, My: d.My, Mz: d.Mz });
   const res = resistancesSection(d.profil, mat, prop, classification.classe, profil);
   const voilement = verifierVoilementCisaillement(d.profil, mat, prop, profil);
   const inter = interactionSection(d.profil, mat, prop, classification.classe, res, { N: d.N, My: d.My, Mz: d.Mz, Vz: d.Vz, Vy: d.Vy }, profil);
@@ -111,7 +111,6 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
 
   let i633: Interaction633 | null = null;
   if (comprime && avecMoment && fy !== null && fz !== null) {
-    const psiLT = d.diagrammeLT.type === 'lineaire' ? d.diagrammeLT.psi : d.psi_y;
     i633 = interaction633(
       {
         profil: d.profil,
@@ -127,9 +126,9 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
         chi_LT: dev.chi_LT,
         lambda_y: fy.lambda_,
         lambda_z: fz.lambda_,
-        Cmy: coefficientCm(d.psi_y),
-        Cmz: coefficientCm(d.psi_z),
-        CmLT: coefficientCm(psiLT),
+        Cmy: coefficientCmDiagramme(d.diagrammeY),
+        Cmz: coefficientCmDiagramme(d.diagrammeZ),
+        CmLT: coefficientCmDiagramme(d.diagrammeLT),
         sensibleTorsion: dev.applicable,
       },
       profil

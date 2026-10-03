@@ -37,6 +37,12 @@ export interface ActionsClassification {
   N: number;
   /** Moment autour de y (kN.m), pour la distribution de contraintes de l'ame. */
   My: number;
+  /**
+   * Moment autour de z (kN.m). Sous M_z, les parois laterales d'un tube
+   * rectangulaire deviennent des semelles comprimees : les classer comme des
+   * ames flechies serait non conservatif.
+   */
+  Mz: number;
 }
 
 const N_PAR_KN = 1000;
@@ -87,7 +93,7 @@ export function distributionAme(c: number, t: number, fy: number, prop: Propriet
 export function classifier(p: Profil, m: Materiau, prop: Proprietes, a: ActionsClassification): Classification {
   const eps = epsilon(m.fy);
   const parois: ClasseParoi[] = [];
-  const traction = a.N < 0 && a.My === 0;
+  const traction = a.N < 0 && a.My === 0 && a.Mz === 0;
 
   if (p.type === 'tube-circulaire') {
     const el = p.d / p.t;
@@ -109,21 +115,28 @@ export function classifier(p: Profil, m: Materiau, prop: Proprietes, a: ActionsC
       tAme = p.tw;
       nomAme = 'ame';
     }
-    const { alpha, psi } = distributionAme(cAme, tAme, m.fy, prop, a);
-    const limAme = limitesParoiInterne(eps, alpha, psi);
     const elAme = cAme / tAme;
-    parois.push({
-      paroi: nomAme,
-      c: cAme,
-      t: tAme,
-      elancement: elAme,
-      limites: limAme,
-      classe: traction ? 1 : classeDe(elAme, limAme),
-      detail: `paroi interne, alpha = ${fr(alpha, 3)}, psi = ${fr(psi, 3)}`,
-    });
+    if (p.type === 'tube-rectangulaire' && a.Mz !== 0) {
+      // CHOIX CONSERVATIF, symetrique de celui des parois paralleles a b :
+      // sous M_z, la paroi laterale est classee en compression uniforme.
+      const lim: [number, number, number] = [33 * eps, 38 * eps, 42 * eps];
+      parois.push({ paroi: nomAme, c: cAme, t: tAme, elancement: elAme, limites: lim, classe: classeDe(elAme, lim), detail: 'paroi interne comprimee (M_z non nul)' });
+    } else {
+      const { alpha, psi } = distributionAme(cAme, tAme, m.fy, prop, a);
+      const limAme = limitesParoiInterne(eps, alpha, psi);
+      parois.push({
+        paroi: nomAme,
+        c: cAme,
+        t: tAme,
+        elancement: elAme,
+        limites: limAme,
+        classe: traction ? 1 : classeDe(elAme, limAme),
+        detail: `paroi interne, alpha = ${fr(alpha, 3)}, psi = ${fr(psi, 3)}`,
+      });
+    }
 
     if (p.type === 'tube-rectangulaire') {
-      // Parois paralleles a b : en compression (N, M_y) ; classement en compression uniforme.
+      // Parois paralleles a b : en compression (N, M_y) ; classement en compression uniforme, meme sous M_z seul (conservatif).
       const c = p.b - 3 * p.t;
       const lim: [number, number, number] = [33 * eps, 38 * eps, 42 * eps];
       parois.push({ paroi: 'paroi superieure (b - 3t)', c, t: p.t, elancement: c / p.t, limites: lim, classe: traction ? 1 : classeDe(c / p.t, lim), detail: 'paroi interne comprimee' });

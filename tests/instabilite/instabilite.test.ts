@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   coefficientCm,
+  coefficientCmDiagramme,
   coefficientsC,
   courbeFlambement,
   deversement,
@@ -115,6 +116,13 @@ describe('flexion composee, annexe B', () => {
   it('C_m = 0,6 + 0,4 psi >= 0,4', () => {
     expect(coefficientCm(1)).toBeCloseTo(1, 10);
     expect(coefficientCm(-1)).toBe(0.4);
+  });
+
+  it('C_m selon le diagramme (tableau B.3) : 0,95 charge repartie, 0,90 concentree, lineaire sinon', () => {
+    expect(coefficientCmDiagramme({ type: 'repartie' })).toBe(0.95);
+    expect(coefficientCmDiagramme({ type: 'concentree-milieu' })).toBe(0.9);
+    expect(coefficientCmDiagramme({ type: 'lineaire', psi: 0 })).toBeCloseTo(0.6, 10);
+    expect(() => coefficientCmDiagramme({ type: 'lineaire', psi: 2 })).toThrow('psi');
   });
 
   it('k_yy borne par C_my (1 + 0,8 n_y) ; annexe A refusee explicitement', () => {

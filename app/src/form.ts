@@ -32,14 +32,19 @@ export interface ModeleSaisie {
   Lcrz: number;
   LLT: number;
   empeche: boolean;
-  diagramme: 'lineaire' | 'repartie' | 'concentree-milieu';
+  diagramme: TypeDiagramme;
   psiLT: number;
   point: 'semelle-superieure' | 'centre' | 'semelle-inferieure';
   /** null : M_cr par l'expression hors norme. */
   Mcr: number | null;
+  diagrammeY: TypeDiagramme;
   psiY: number;
+  diagrammeZ: TypeDiagramme;
   psiZ: number;
 }
+
+export type TypeDiagramme = 'lineaire' | 'repartie' | 'concentree-milieu';
+const DIAGRAMMES = ['lineaire', 'repartie', 'concentree-milieu'] as const;
 
 export type Lecture = { ok: true; modele: ModeleSaisie } | { ok: false; message: string };
 
@@ -70,7 +75,9 @@ export function modeleParDefaut(): ModeleSaisie {
     psiLT: 0,
     point: 'centre',
     Mcr: null,
+    diagrammeY: 'lineaire',
     psiY: 0,
+    diagrammeZ: 'lineaire',
     psiZ: 1,
   };
 }
@@ -102,6 +109,8 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
     const mcrTexte = (v.mcr ?? '').trim();
     const mcr = mcrTexte === '' ? null : lireNombre(mcrTexte);
     if (mcrTexte !== '' && mcr === null) throw new ErreurDeSaisie('M_cr : nombre attendu, ou champ vide.');
+    const diagrammeY = choix(v, 'diagramme_y', DIAGRAMMES);
+    const diagrammeZ = choix(v, 'diagramme_z', DIAGRAMMES);
     return {
       ok: true,
       modele: {
@@ -125,12 +134,14 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
         Lcrz: nombre(v, 'lcrz', true, d.Lcrz),
         LLT: nombre(v, 'llt', true, d.LLT),
         empeche: v.empeche === 'oui',
-        diagramme: choix(v, 'diagramme', ['lineaire', 'repartie', 'concentree-milieu'] as const),
+        diagramme: choix(v, 'diagramme', DIAGRAMMES),
         psiLT: nombre(v, 'psi_lt', false, d.psiLT),
         point: choix(v, 'point', ['semelle-superieure', 'centre', 'semelle-inferieure'] as const),
         Mcr: mcr,
-        psiY: nombre(v, 'psi_y', true, d.psiY),
-        psiZ: nombre(v, 'psi_z', true, d.psiZ),
+        diagrammeY,
+        psiY: nombre(v, 'psi_y', diagrammeY === 'lineaire', d.psiY),
+        diagrammeZ,
+        psiZ: nombre(v, 'psi_z', diagrammeZ === 'lineaire', d.psiZ),
       },
     };
   } catch (e) {
@@ -166,7 +177,9 @@ export function champsDepuisModele(m: ModeleSaisie): Record<string, string> {
     psi_lt: n(m.psiLT),
     point: m.point,
     mcr: m.Mcr === null ? '' : n(m.Mcr),
+    diagramme_y: m.diagrammeY,
     psi_y: n(m.psiY),
+    diagramme_z: m.diagrammeZ,
     psi_z: n(m.psiZ),
   };
 }
@@ -202,7 +215,7 @@ export function donneesDepuisModele(m: ModeleSaisie): DonneesElement {
     diagrammeLT: m.diagramme === 'lineaire' ? { type: 'lineaire', psi: m.psiLT } : { type: m.diagramme },
     pointApplication: m.point,
     McrSaisi: m.Mcr,
-    psi_y: m.psiY,
-    psi_z: m.psiZ,
+    diagrammeY: m.diagrammeY === 'lineaire' ? { type: 'lineaire', psi: m.psiY } : { type: m.diagrammeY },
+    diagrammeZ: m.diagrammeZ === 'lineaire' ? { type: 'lineaire', psi: m.psiZ } : { type: m.diagrammeZ },
   };
 }

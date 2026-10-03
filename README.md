@@ -18,7 +18,8 @@ Page publiée : <https://henri421.github.io/sections-ec3/>.
   I_t, I_w) sont **recalculées**, congés compris, et un test les compare aux valeurs publiées.
   Sections soudées en I, tubes rectangulaires et circulaires saisis librement.
 - **Classification** (§5.5, tableau 5.2) sous la **sollicitation réelle** : aucune classe n'est
-  stockée, la classe de chaque paroi est rendue avec la paroi qui gouverne.
+  stockée, la classe de chaque paroi est rendue avec la paroi qui gouverne. Sous M_z, les parois
+  latérales d'un tube rectangulaire sont classées en compression uniforme (côté sécurité).
 - **Résistances** (§6.2) : N, M (plastique ou élastique selon la classe), V avec les
   expressions de A_v par type de profil, critère de voilement par cisaillement,
   interaction M-V (6.30) et N-M (6.36 à 6.42).
@@ -44,7 +45,7 @@ relèvent de `assemblages-ec3`.
   soudées.
 - Interaction M-V hors profils en I fléchis autour de y : (1 − ρ) appliqué au moment
   résistant entier, du côté de la sécurité.
-- C_m pour des moments linéaires (tableau B.3) seulement.
+- C_m (tableau B.3) : moments d'extrémité linéaires, ou charge répartie / concentrée sur appuis simples (M_h = 0) ; les diagrammes mixtes (moments d'extrémité et charge transversale) ne sont pas traités.
 
 ## Développement
 

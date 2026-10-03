@@ -19,8 +19,8 @@ function element(modifs: Partial<DonneesElement> = {}): DonneesElement {
     diagrammeLT: { type: 'lineaire', psi: 0 },
     pointApplication: 'centre',
     McrSaisi: null,
-    psi_y: 0,
-    psi_z: 1,
+    diagrammeY: { type: 'lineaire', psi: 0 },
+    diagrammeZ: { type: 'lineaire', psi: 1 },
     ...modifs,
   };
 }
