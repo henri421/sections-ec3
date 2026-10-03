@@ -50,3 +50,37 @@ dont le rayon de rive dépasse l'épaisseur (L 45×45×3 : r₂ = 3,5 > t = 3, r
 - 2 UPE 200 dos à dos, gousset 10 mm : A et I_y doubles, I_z = 2 [I_z,1 + A₁ (5 + y_G,1)²]
   (Steiner), centre de cisaillement au centre de gravité.
 - 2 L 80×80×8, gousset 10 mm : symétrique par rapport à z, centre de cisaillement à t/2 du talon.
+
+## Classification et section efficace (lot 4)
+
+- Cornières à ailes égales en S355 : les 109 profils que le producteur classe 4 sont classés 4.
+  Trois désaccords à la limite (L 300×300×32, 180×180×19, 160×160×17) : le producteur prend
+  f_y = 345 MPa de la norme de produit (16 < t ≤ 40 mm), l'outil 355 MPa du tableau 3.1 ; avec
+  345 MPa, le désaccord disparaît.
+- A_eff / A du producteur retrouvé à 1,15 % près. Convention commune : aile entière comme
+  largeur de référence, k_σ = 0,43, rectangle (1 − ρ) h t retiré à chaque extrémité d'aile.
+- Calcul à la main, L 100×100×6 S235 : λ_p = 16,67 / (28,4 × 0,6557) = 0,895,
+  ρ = (0,895 − 0,188) / 0,895² = 0,882.
+
+## Flambement (lot 6)
+
+Recoupement avec les résistances publiées (S355, f_y de la norme de produit) :
+
+- **UPE, flexion-torsion** N_b,T,Rd : 14 profils, 1 à 14 m, écart maximal **1,4 %**
+  (UPE 120, 3 m). L'équation de flexion-torsion et le centre de cisaillement sont validés.
+- **Cornières, torsion pure** : écart maximal **0,6 %**.
+- **Cornières de treillis, flexion autour de v** (annexe BB.1.2) : 3 % au plus pour h ≤ 120 mm.
+
+**Point ouvert.** Cornières de 140 à 300 mm : l'outil **dépasse** la valeur publiée de 2 à
+6,6 % aux faibles longueurs (1 m), l'écart se résorbant avec la longueur (1,7 % à 14 m pour
+L 300×300×35). Ni f_y, ni la classe, ni l'aire ne l'expliquent. Le tableau consulté suit
+l'annexe nationale britannique, qui peut modifier l'annexe BB : c'est l'hypothèse à vérifier.
+
+**Écart connu, non adopté.** Flexion autour de z des UPE courts : le producteur publie moins que
+le §6.3.1.2 (UPE 200 à 1 m : 643 kN contre 859 kN), comme s'il employait
+max(λ ; 0,5 + 0,7 λ), règle que l'annexe BB réserve aux cornières. L'outil suit le §6.3.1.2 ;
+les valeurs coïncident à partir de 6 m.
+
+Le mode couplé de flexion-torsion des cornières à ailes égales (flexion autour de l'axe de
+symétrie et torsion), absent des tableaux du producteur qui ne donnent que la torsion pure,
+est calculé et vérifié : il est du côté de la sécurité.

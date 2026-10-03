@@ -16,6 +16,10 @@ Chaque lot se termine par les tests au vert (banc local), le typecheck en CI et 
   n'acceptent que `ProfilDoublementSymetrique`, `verifierElement` refuse L et U), moteur de
   contour, catalogue L/UPE/UPN avec recoupement, 2L et 2U. Validation :
   `docs/validation/cornieres-u-proprietes.md`.
+- **Lots 4 à 6 faits** (2026-10-03) : classification et classe 4 (EN 1993-1-5 §4.4), résistances
+  de section (critère linéaire (6.2), (6.44) en classe 4), flambement par flexion et
+  flexion-torsion. Point ouvert : cornières de 140 à 300 mm, flambement de treillis 2 à 6,6 % au-dessus
+  des valeurs publiées aux faibles longueurs (voir la note de validation).
 - **Écart au plan, lot 3** : I_t, I_w et e₀ des L et U laminés sont **repris du producteur**, et
   non recalculés. Les formules usuelles s'écartent de −20 à +17 % des valeurs publiées
   (surestimation non conservative pour la flexion-torsion et le déversement).

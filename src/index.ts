@@ -36,6 +36,28 @@ export {
   type ResistancesSection,
   type InteractionSection,
 } from './resistances/section';
+export {
+  momentsDeCalcul,
+  resistancesNonSymetriques,
+  aireCisaillementNonSymetrique,
+  verifierVoilementNonSymetrique,
+  interactionNonSymetrique,
+  type ActionsSection,
+  type MomentsFlexion,
+  type ResistancesNonSymetriques,
+  type InteractionNonSymetrique,
+} from './resistances/non-symetriques';
+export {
+  flambementsNonSymetriques,
+  torsionFlexion,
+  chargeCritiqueFlexionTorsion,
+  courbeNonSymetrique,
+  SOURCE_NCR_TF,
+  type FlambementNonSymetrique,
+  type LongueursFlambement,
+  type ModeFlambement,
+  type TorsionFlexion,
+} from './instabilite/flexion-torsion';
 export { flambement, courbeFlambement, facteurReduction, ALPHA, type Courbe, type Flambement } from './instabilite/flambement';
 export {
   momentCritique,
