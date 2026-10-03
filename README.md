@@ -31,6 +31,20 @@ Page publiée : <https://henri421.github.io/sections-ec3/>.
 - **Flexion composée** (§6.3.3) : facteurs k_ij de l'**annexe B**, choix porté par le profil
   normatif.
 
+## En cours : cornières, profils en U, 2L et 2U
+
+Plan : [`PLAN-cornieres-et-u.md`](PLAN-cornieres-et-u.md). Fait (noyau, pas encore dans
+l'interface) :
+
+- catalogue **L à ailes égales et inégales** (EN 10056-1), **UPE** et **UPN** (gamme ArcelorMittal) ;
+- moteur géométrique général : centre de gravité, **axes principaux u, v**, axe neutre plastique
+  cherché sans supposer de symétrie, profils composés **2L et 2U dos à dos** ;
+- recoupement avec les valeurs publiées sur toute la gamme (A à 1,1 % près, inerties à 2 % près,
+  deux valeurs publiées écartées avec leur motif) ;
+- I_t, I_w et centre de cisaillement des L et U laminés **repris du producteur** (voir les choix
+  déclarés) ;
+- garde-fou : une cornière ou un U ne traverse pas les vérifications des sections en I.
+
 ## Hors périmètre de la version 1
 
 Sections de classe 4 (propriétés efficaces, EN 1993-1-5 §4) ; **annexe A** du §6.3.3 (la
@@ -45,6 +59,12 @@ relèvent de `assemblages-ec3`.
   soudées.
 - Interaction M-V hors profils en I fléchis autour de y : (1 − ρ) appliqué au moment
   résistant entier, du côté de la sécurité.
+- I_t, I_w et centre de cisaillement des cornières et des U laminés : valeurs **publiées** par
+  le producteur, faute d'expression fermée fiable (les formules usuelles s'écartent de −20 à
+  +17 %, et une surestimation serait non conservative). Cornière saisie : I_t par
+  (h + b − t) t³ / 3, expression minorante.
+- UPN : pente des ailes de 8 % jusqu'à UPN 300 (t_f à b/2), 5 % au-delà (t_f au milieu de l'aile),
+  convention calée sur les valeurs publiées.
 - C_m (tableau B.3) : moments d'extrémité linéaires, ou charge répartie / concentrée sur appuis simples (M_h = 0) ; les diagrammes mixtes (moments d'extrémité et charge transversale) ne sont pas traités.
 
 ## Développement
@@ -61,7 +81,9 @@ Cas validé : [`docs/validation/heb200-ipe300.md`](docs/validation/heb200-ipe300
 ## Références
 
 EN 1993-1-1:2005 §5.5, §6.2, §6.3, annexe B ; EN 1993-1-5 §5.1 ; EN 10210-2 et EN 10219-2 pour
-les tubes ; Euronorm 19-57 et 53-62 pour les profils. L'EN 1993-1-1:2022 (deuxième génération)
+les tubes ; Euronorm 19-57 et 53-62 pour les profils ; EN 10056-1 et DIN 1026-1 pour les cornières
+et les U, dimensions et valeurs publiées du catalogue ArcelorMittal (Orange Book, consulté le
+2026-10-03). L'EN 1993-1-1:2022 (deuxième génération)
 n'est pas encore applicable.
 
 ## Licence

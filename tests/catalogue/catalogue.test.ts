@@ -21,8 +21,8 @@ function ecart(calcule: number, publie: number): number {
 }
 
 describe('catalogue', () => {
-  it('trois familles, chacune avec source et date', () => {
-    const f = familles();
+  it('familles en I : IPE, HEA, HEB, chacune avec source et date', () => {
+    const f = familles().filter((x) => x.type === 'I-lamine');
     expect(f.map((x) => x.famille)).toEqual(['IPE', 'HEA', 'HEB']);
     for (const x of f) {
       expect(x.source.length).toBeGreaterThan(10);

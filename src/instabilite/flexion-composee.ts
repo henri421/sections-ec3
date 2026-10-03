@@ -11,7 +11,7 @@
  */
 
 import type { Classe } from '../classification/classifier';
-import type { Profil } from '../model/profil';
+import type { ProfilDoublementSymetrique } from '../model/profil';
 import type { ProfilEc3 } from '../norms/profil';
 import { fr } from '../norms/profil';
 import type { DiagrammeLT } from './deversement';
@@ -37,7 +37,7 @@ export function coefficientCmDiagramme(d: DiagrammeLT): number {
 }
 
 export interface EntreesInteraction {
-  profil: Profil;
+  profil: ProfilDoublementSymetrique;
   classe: Classe;
   NEd: number;
   MyEd: number;

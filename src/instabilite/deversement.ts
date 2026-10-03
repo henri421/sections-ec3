@@ -11,7 +11,7 @@
  * resultat le dit. M_cr peut aussi etre saisi (calcul aux elements finis).
  */
 
-import type { Materiau, Profil } from '../model/profil';
+import type { Materiau, ProfilDoublementSymetrique } from '../model/profil';
 import { E, G } from '../model/profil';
 import type { Proprietes } from '../proprietes/brutes';
 import type { ProfilEc3 } from '../norms/profil';
@@ -61,7 +61,7 @@ export interface MomentCritique {
  * charge appliquee au-dessus du centre de cisaillement (destabilisante).
  */
 export function momentCritique(
-  p: Profil,
+  p: ProfilDoublementSymetrique,
   prop: Proprietes,
   L: number,
   d: DiagrammeLT,
@@ -84,7 +84,7 @@ export function momentCritique(
 }
 
 /** Courbe de deversement : methode generale (tableau 6.4) ou laminee (tableau 6.5). */
-export function courbeDeversement(p: Profil, methode: 'generale' | 'laminee'): Courbe {
+export function courbeDeversement(p: ProfilDoublementSymetrique, methode: 'generale' | 'laminee'): Courbe {
   if (p.type !== 'I-lamine' && p.type !== 'I-soude') return 'd';
   const hb = p.h / p.b;
   if (methode === 'generale') {
@@ -122,7 +122,7 @@ export interface Deversement {
  * satisfait. Sections creuses fermees : non applicable.
  */
 export function deversement(
-  p: Profil,
+  p: ProfilDoublementSymetrique,
   m: Materiau,
   prop: Proprietes,
   Wy: number,

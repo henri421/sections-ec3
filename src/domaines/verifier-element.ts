@@ -10,7 +10,7 @@
  */
 
 import type { Nuance, Profil, Materiau } from '../model/profil';
-import { materiau } from '../model/profil';
+import { estDoublementSymetrique, materiau } from '../model/profil';
 import { proprietes, type Proprietes } from '../proprietes/brutes';
 import { classifier, type Classification } from '../classification/classifier';
 import { interactionSection, resistancesSection, verifierVoilementCisaillement, type InteractionSection, type ResistancesSection } from '../resistances/section';
@@ -71,12 +71,19 @@ export interface ResultatElement {
 
 export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatElement {
   verifierProfil(profil);
-  const prop = proprietes(d.profil);
-  const mat = materiau(d.nuance, d.profil);
-  const classification = classifier(d.profil, mat, prop, { N: d.N, My: d.My, Mz: d.Mz });
-  const res = resistancesSection(d.profil, mat, prop, classification.classe, profil);
-  const voilement = verifierVoilementCisaillement(d.profil, mat, prop, profil);
-  const inter = interactionSection(d.profil, mat, prop, classification.classe, res, { N: d.N, My: d.My, Mz: d.Mz, Vz: d.Vz, Vy: d.Vy }, profil);
+  // Garde-fou : les verifications ci-dessous supposent la double symetrie
+  // ((6.36) a (6.40), M_cr des I, flambement par flexion seul). Une corniere
+  // ou un U n'y passe pas, plutot que d'y recevoir un resultat faux.
+  if (!estDoublementSymetrique(d.profil)) {
+    throw new Error(`Profil « ${d.profil.nom} » (${d.profil.type}) : verification des cornieres et profils en U non encore disponible (proprietes seules).`);
+  }
+  const p = d.profil;
+  const prop = proprietes(p);
+  const mat = materiau(d.nuance, p);
+  const classification = classifier(p, mat, prop, { N: d.N, My: d.My, Mz: d.Mz });
+  const res = resistancesSection(p, mat, prop, classification.classe, profil);
+  const voilement = verifierVoilementCisaillement(p, mat, prop, profil);
+  const inter = interactionSection(p, mat, prop, classification.classe, res, { N: d.N, My: d.My, Mz: d.Mz, Vz: d.Vz, Vy: d.Vy }, profil);
   const verifs: Verification[] = [];
   const g1 = profil.gamma_M1.valeur;
 
@@ -88,8 +95,8 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
 
   // Flambement : seulement en compression.
   const comprime = d.N > 0;
-  const fy = comprime ? flambement(d.profil, mat, prop, 'y', d.Lcr_y, profil) : null;
-  const fz = comprime ? flambement(d.profil, mat, prop, 'z', d.Lcr_z, profil) : null;
+  const fy = comprime ? flambement(p, mat, prop, 'y', d.Lcr_y, profil) : null;
+  const fz = comprime ? flambement(p, mat, prop, 'z', d.Lcr_z, profil) : null;
   for (const f of [fy, fz]) {
     if (f === null) continue;
     verifs.push({ nom: `Flambement par flexion autour de ${f.axe}`, clause: '§6.3.1', applicable: true, taux: d.N / f.Nb_Rd, motif: `courbe ${f.courbe}, lambda = ${fr(f.lambda_, 3)}, chi = ${fr(f.chi, 3)}` });
@@ -100,7 +107,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
   const dev =
     d.My === 0
       ? { applicable: false, motif: 'Aucun moment autour de y.', methode: 'laminee' as const, M_cr: null, lambda_LT: null, courbe: null, chi_LT: 1, f: null, Mb_Rd: null }
-      : deversement(d.profil, mat, prop, Wy, d.My, d.deversementEmpeche, d.L_LT, d.diagrammeLT, d.pointApplication, d.McrSaisi, profil);
+      : deversement(p, mat, prop, Wy, d.My, d.deversementEmpeche, d.L_LT, d.diagrammeLT, d.pointApplication, d.McrSaisi, profil);
   verifs.push({
     nom: 'Deversement',
     clause: '§6.3.2',
@@ -113,7 +120,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
   if (comprime && avecMoment && fy !== null && fz !== null) {
     i633 = interaction633(
       {
-        profil: d.profil,
+        profil: p,
         classe: classification.classe,
         NEd: d.N,
         MyEd: d.My,

@@ -8,7 +8,7 @@
  * fonction prend donc les actions en entree.
  */
 
-import type { Materiau, Profil } from '../model/profil';
+import type { Materiau, ProfilDoublementSymetrique } from '../model/profil';
 import { epsilon } from '../model/profil';
 import type { Proprietes } from '../proprietes/brutes';
 import { fr } from '../norms/profil';
@@ -90,7 +90,7 @@ export function distributionAme(c: number, t: number, fy: number, prop: Propriet
  * uniforme (9 / 10 / 14 epsilon) quelle que soit la sollicitation, sans
  * profiter des limites plus larges du gradient de M_z.
  */
-export function classifier(p: Profil, m: Materiau, prop: Proprietes, a: ActionsClassification): Classification {
+export function classifier(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, a: ActionsClassification): Classification {
   const eps = epsilon(m.fy);
   const parois: ClasseParoi[] = [];
   const traction = a.N < 0 && a.My === 0 && a.Mz === 0;

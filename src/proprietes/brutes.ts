@@ -11,8 +11,10 @@
  * des catalogues, qui tient compte des conges.
  */
 
-import type { Profil } from '../model/profil';
+import type { Profil, ProfilDoublementSymetrique } from '../model/profil';
+import { estDoublementSymetrique } from '../model/profil';
 import { exigerPositif } from '../norms/profil';
+import { proprietesNonSymetriques } from './formes';
 
 export interface Proprietes {
   A: number;
@@ -32,6 +34,82 @@ export interface Proprietes {
   Aw: number;
   /** Hauteur d'ame h_w = h - 2 t_f (mm), ou 0. */
   hw: number;
+  /**
+   * Centre de gravite dans le repere de construction du profil (mm) : 0 pour
+   * les sections doublement symetriques, centrees.
+   */
+  yG: number;
+  zG: number;
+  /** Produit d'inertie au centre de gravite, int y z dA (mm4) : 0 si un axe est de symetrie. */
+  Iyz: number;
+  /** Direction de l'axe fort u, comptee de y vers z (rad). */
+  alpha: number;
+  Iu: number;
+  Iv: number;
+  iu: number;
+  iv: number;
+  /** Modules autour des axes principaux ; W_el est le module minimal. */
+  Wel_u: number;
+  Wel_v: number;
+  Wpl_u: number;
+  Wpl_v: number;
+  /** Centre de cisaillement par rapport au centre de gravite (mm). */
+  y0: number;
+  z0: number;
+  /** Provenance de I_t et I_w. */
+  origineTorsion: string;
+}
+
+type ProprietesBase = Omit<Proprietes, 'yG' | 'zG' | 'Iyz' | 'alpha' | 'Iu' | 'Iv' | 'iu' | 'iv' | 'Wel_u' | 'Wel_v' | 'Wpl_u' | 'Wpl_v' | 'y0' | 'z0' | 'origineTorsion'>;
+
+const ORIGINE_TORSION: Record<ProfilDoublementSymetrique['type'], string> = {
+  'I-lamine': 'I_t : formule des catalogues de profils lamines (conges compris) ; I_w : semelles seules',
+  'I-soude': 'I_t : parois minces ; I_w : semelles seules',
+  'tube-rectangulaire': 'I_t : EN 10210-2 annexe B ; I_w nul',
+  'tube-circulaire': 'I_t = 2 I ; I_w nul',
+};
+
+/** Proprietes de toute section : doublement symetrique (integration par bandes) ou non (contour). */
+export function proprietes(p: Profil): Proprietes {
+  if (estDoublementSymetrique(p)) {
+    const b = symetriques(p);
+    const fort = b.Iy >= b.Iz;
+    return {
+      ...b,
+      yG: 0,
+      zG: 0,
+      Iyz: 0,
+      alpha: fort ? 0 : Math.PI / 2,
+      Iu: fort ? b.Iy : b.Iz,
+      Iv: fort ? b.Iz : b.Iy,
+      iu: fort ? b.iy : b.iz,
+      iv: fort ? b.iz : b.iy,
+      Wel_u: fort ? b.Wel_y : b.Wel_z,
+      Wel_v: fort ? b.Wel_z : b.Wel_y,
+      Wpl_u: fort ? b.Wpl_y : b.Wpl_z,
+      Wpl_v: fort ? b.Wpl_z : b.Wpl_y,
+      y0: 0,
+      z0: 0,
+      origineTorsion: ORIGINE_TORSION[p.type],
+    };
+  }
+  const n = proprietesNonSymetriques(p);
+  let hw = 0;
+  let Aw = 0;
+  if (p.type === 'U' || p.type === '2U') {
+    const u = p.type === 'U' ? p : p.profilU;
+    hw = u.h - 2 * u.tf;
+    Aw = (p.type === 'U' ? 1 : 2) * hw * u.tw;
+  }
+  return {
+    ...n,
+    iy: Math.sqrt(n.Iy / n.A),
+    iz: Math.sqrt(n.Iz / n.A),
+    iu: Math.sqrt(n.Iu / n.A),
+    iv: Math.sqrt(n.Iv / n.A),
+    Aw,
+    hw,
+  };
 }
 
 const BANDES = 20000;
@@ -76,7 +154,7 @@ export function rayonsTube(t: number, finition: 'chaud' | 'froid'): { ro: number
   return { ro, ri: ro - t };
 }
 
-export function proprietes(p: Profil): Proprietes {
+function symetriques(p: ProfilDoublementSymetrique): ProprietesBase {
   if (p.type === 'tube-circulaire') {
     exigerPositif(p.d, 'Le diametre d', 'mm');
     exigerPositif(p.t, 'L epaisseur t', 'mm');

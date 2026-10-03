@@ -4,7 +4,7 @@
  * Unites : longueurs en mm, efforts en kN, MPa.
  */
 
-import type { Materiau, Profil } from '../model/profil';
+import type { Materiau, ProfilDoublementSymetrique } from '../model/profil';
 import { E } from '../model/profil';
 import type { Proprietes } from '../proprietes/brutes';
 import type { ProfilEc3 } from '../norms/profil';
@@ -23,7 +23,7 @@ const N_PAR_KN = 1000;
  * combinaison non couverte leve, jamais une case voisine : simplifier ce
  * tableau est non conservatif dans plusieurs cases.
  */
-export function courbeFlambement(p: Profil, m: Materiau, axe: 'y' | 'z'): Courbe {
+export function courbeFlambement(p: ProfilDoublementSymetrique, m: Materiau, axe: 'y' | 'z'): Courbe {
   const s460 = m.nuance === 'S460';
   if (p.type === 'I-lamine') {
     const hb = p.h / p.b;
@@ -67,7 +67,7 @@ export function facteurReduction(lambda_: number, alpha: number): { Phi: number;
  * N_cr = pi^2 E I / L_cr^2 ; lambda = sqrt(A f_y / N_cr) (classes 1 a 3) ;
  * N_b,Rd = chi A f_y / gamma_M1 (6.47).
  */
-export function flambement(p: Profil, m: Materiau, prop: Proprietes, axe: 'y' | 'z', Lcr: number, profil: ProfilEc3): Flambement {
+export function flambement(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, axe: 'y' | 'z', Lcr: number, profil: ProfilEc3): Flambement {
   exigerPositif(Lcr, `La longueur de flambement L_cr,${axe}`, 'mm');
   const I = axe === 'y' ? prop.Iy : prop.Iz;
   const Ncr = (Math.PI ** 2 * E * I) / (Lcr * Lcr);

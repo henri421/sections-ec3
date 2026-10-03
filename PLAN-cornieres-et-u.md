@@ -10,6 +10,18 @@ accents, kN/mm/MPa, « l'outil constate et ne prescrit pas », vérification san
 déclarée **non applicable** avec son motif, toute source hors norme nommée comme telle.
 Chaque lot se termine par les tests au vert (banc local), le typecheck en CI et un commit.
 
+## Avancement
+
+- **Lots 0 à 3 faits** (2026-10-03) : garde-fous par le typage (les fonctions de vérification
+  n'acceptent que `ProfilDoublementSymetrique`, `verifierElement` refuse L et U), moteur de
+  contour, catalogue L/UPE/UPN avec recoupement, 2L et 2U. Validation :
+  `docs/validation/cornieres-u-proprietes.md`.
+- **Écart au plan, lot 3** : I_t, I_w et e₀ des L et U laminés sont **repris du producteur**, et
+  non recalculés. Les formules usuelles s'écartent de −20 à +17 % des valeurs publiées
+  (surestimation non conservative pour la flexion-torsion et le déversement).
+- Typecheck local possible désormais : `_banc-local/typecheck.mjs` (TypeScript embarqué par
+  VS Code).
+
 ## Pourquoi ce n'est pas un simple ajout au catalogue
 
 Le noyau actuel suppose partout des sections **doublement symétriques** :

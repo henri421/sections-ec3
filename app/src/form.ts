@@ -6,7 +6,7 @@
  */
 
 import { lireNombre } from 'aedificium-ui';
-import type { DonneesElement, Nuance, Profil } from '../../src/index';
+import type { DonneesElement, Nuance, ProfilDoublementSymetrique } from '../../src/index';
 import { profilCatalogue } from '../../src/index';
 
 export type TypeSaisie = 'catalogue' | 'I-soude' | 'tube-rectangulaire' | 'tube-circulaire';
@@ -184,7 +184,7 @@ export function champsDepuisModele(m: ModeleSaisie): Record<string, string> {
   };
 }
 
-export function profilDepuisModele(m: ModeleSaisie): Profil {
+export function profilDepuisModele(m: ModeleSaisie): ProfilDoublementSymetrique {
   switch (m.source) {
     case 'catalogue':
       return profilCatalogue(m.nomCatalogue);

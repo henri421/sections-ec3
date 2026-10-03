@@ -6,7 +6,54 @@
  * Le profil ne porte AUCUNE classe : la classe depend du couple profil et
  * sollicitation (`classifier`). Un catalogue qui annoncerait « IPE 300
  * classe 1 » serait faux des que l'effort normal devient significatif.
+ *
+ * Reperes de construction des profils non doublement symetriques (les
+ * proprietes sont ensuite rapportees au centre de gravite) :
+ *   L  : talon a l'origine, aile h le long de z, aile b le long de y ;
+ *   U  : dos de l'ame sur y = 0, ailes vers +y, symetrique par rapport a y ;
+ *   2L : deux cornieres adossees de part et d'autre d'un gousset vertical
+ *        d'epaisseur `ecartement`, ailes accolees verticales, symetrique par
+ *        rapport a z ;
+ *   2U : deux U ame contre ame, symetrique par rapport a y et a z.
  */
+
+/** Corniere laminee, EN 10056-1. */
+export interface ProfilL {
+  type: 'L';
+  nom: string;
+  /** Aile le long de z (mm), la plus grande pour une corniere a ailes inegales. */
+  h: number;
+  /** Aile le long de y (mm). */
+  b: number;
+  t: number;
+  /** Rayon de conge r_1 et rayon de rive r_2 (mm). */
+  r1: number;
+  r2: number;
+  /** Inertie de torsion publiee par le producteur (mm4), absente pour une corniere saisie. */
+  It?: number;
+}
+
+/** Profil en U lamine : ailes paralleles (UPE) ou inclinees (UPN). */
+export interface ProfilU {
+  type: 'U';
+  nom: string;
+  h: number;
+  b: number;
+  tw: number;
+  /** Epaisseur d'aile, mesuree a l'abscisse yTf depuis le dos de l'ame (mm). */
+  tf: number;
+  yTf: number;
+  /** Pente de la face interieure des ailes : 0 (UPE), 0,08 ou 0,05 (UPN). */
+  pente: number;
+  /** Rayon de conge r_1 et rayon de rive r_2 (mm), r_2 = 0 sans arrondi. */
+  r1: number;
+  r2: number;
+  /** Inertie de torsion (mm4) et de gauchissement (mm6) publiees par le producteur. */
+  It?: number;
+  Iw?: number;
+  /** Centre de cisaillement publie : distance au plan moyen de l'ame, cote dos (mm). */
+  e0?: number;
+}
 
 export type Profil =
   | {
@@ -44,7 +91,36 @@ export type Profil =
       d: number;
       t: number;
       finition: 'chaud' | 'froid';
+    }
+  | ProfilL
+  | ProfilU
+  | {
+      type: '2L';
+      nom: string;
+      corniere: ProfilL;
+      /** Epaisseur du gousset entre les cornieres (mm). */
+      ecartement: number;
+      /** Aile accolee au gousset, donc verticale. */
+      accolee: 'h' | 'b';
+    }
+  | {
+      type: '2U';
+      nom: string;
+      profilU: ProfilU;
+      ecartement: number;
     };
+
+/** Profils dont le traitement suppose la double symetrie (I et tubes). */
+export type ProfilDoublementSymetrique = Extract<Profil, { type: 'I-lamine' | 'I-soude' | 'tube-rectangulaire' | 'tube-circulaire' }>;
+
+export function estDoublementSymetrique(p: Profil): p is ProfilDoublementSymetrique {
+  return p.type === 'I-lamine' || p.type === 'I-soude' || p.type === 'tube-rectangulaire' || p.type === 'tube-circulaire';
+}
+
+/** Epaisseur d'aile d'un U a la racine de l'ame, la plus forte pour un UPN (mm). */
+export function epaisseurAileRacine(u: ProfilU): number {
+  return u.tf + u.pente * (u.yTf - u.tw);
+}
 
 export type Nuance = 'S235' | 'S275' | 'S355' | 'S420' | 'S460';
 
@@ -71,8 +147,21 @@ const TABLEAU_3_1: Record<Nuance, [[number, number], [number, number]]> = {
 
 /** Epaisseur gouvernant fy : la plus forte paroi (mm). */
 export function epaisseurMax(p: Profil): number {
-  if (p.type === 'I-lamine' || p.type === 'I-soude') return Math.max(p.tf, p.tw);
-  return p.t;
+  switch (p.type) {
+    case 'I-lamine':
+    case 'I-soude':
+      return Math.max(p.tf, p.tw);
+    case 'tube-rectangulaire':
+    case 'tube-circulaire':
+    case 'L':
+      return p.t;
+    case 'U':
+      return Math.max(p.tw, epaisseurAileRacine(p));
+    case '2L':
+      return p.corniere.t;
+    case '2U':
+      return epaisseurMax(p.profilU);
+  }
 }
 
 /** fy et fu selon la nuance et l'epaisseur, tableau 3.1. Leve au-dela de 80 mm. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ec3Recommande, profilCatalogue, verifierElement, type DonneesElement } from '../../src/index';
+import { corniereCatalogue, ec3Recommande, profilCatalogue, profilUCatalogue, verifierElement, type DonneesElement } from '../../src/index';
 
 const P = ec3Recommande();
 
@@ -53,5 +53,10 @@ describe('verifierElement', () => {
   it('le verdict nomme la verification gouvernante', () => {
     const r = verifierElement(element({ N: 1100 }), P);
     expect(r.motif).toContain('Taux maximal');
+  });
+
+  it('garde-fou : une corniere ou un U ne traverse pas les verifications des sections en I', () => {
+    expect(() => verifierElement(element({ profil: corniereCatalogue('L 100x100x10') }), P)).toThrow('non encore disponible');
+    expect(() => verifierElement(element({ profil: profilUCatalogue('UPN 200') }), P)).toThrow('non encore disponible');
   });
 });

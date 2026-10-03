@@ -4,7 +4,7 @@
  */
 
 import { echapper, nombreFr, tauxFr, type BlocResultat, type LigneResultat } from 'aedificium-ui';
-import type { Profil, ResultatElement } from '../../src/index';
+import type { ProfilDoublementSymetrique, ResultatElement } from '../../src/index';
 import { rayonsTube } from '../../src/index';
 
 export function messageDErreur(e: unknown): string {
@@ -12,7 +12,7 @@ export function messageDErreur(e: unknown): string {
 }
 
 /** Coupe du profil a l'echelle, conges et angles compris. */
-export function dessinProfil(p: Profil): string {
+export function dessinProfil(p: ProfilDoublementSymetrique): string {
   const T = 260;
   const m = 26;
   const H = p.type === 'tube-circulaire' ? p.d : p.h;

@@ -5,7 +5,7 @@
  * MPa.
  */
 
-import type { Materiau, Profil } from '../model/profil';
+import type { Materiau, ProfilDoublementSymetrique } from '../model/profil';
 import { epsilon } from '../model/profil';
 import type { Proprietes } from '../proprietes/brutes';
 import type { Classe } from '../classification/classifier';
@@ -28,7 +28,7 @@ export type DirectionEffort = 'z' | 'y';
  *   (f) tube rectangulaire : A h / (b + h) selon z, A b / (b + h) selon y
  *   (g) tube circulaire    : 2 A / pi
  */
-export function aireCisaillement(p: Profil, prop: Proprietes, dir: DirectionEffort, profil: ProfilEc3): { Av: number; motif: string } {
+export function aireCisaillement(p: ProfilDoublementSymetrique, prop: Proprietes, dir: DirectionEffort, profil: ProfilEc3): { Av: number; motif: string } {
   const eta = profil.eta.valeur;
   switch (p.type) {
     case 'I-lamine': {
@@ -71,7 +71,7 @@ export interface ResistancesSection {
  * gamma_M0 (6.18). La classe 4 releve des proprietes efficaces de
  * l'EN 1993-1-5 §4, non traitees dans cette version : le module leve.
  */
-export function resistancesSection(p: Profil, m: Materiau, prop: Proprietes, classe: Classe, profil: ProfilEc3): ResistancesSection {
+export function resistancesSection(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, classe: Classe, profil: ProfilEc3): ResistancesSection {
   if (classe === 4) {
     throw new Error('Section de classe 4 : les proprietes efficaces (EN 1993-1-5 §4) ne sont pas traitees dans cette version.');
   }
@@ -98,7 +98,7 @@ export function resistancesSection(p: Profil, m: Materiau, prop: Proprietes, cla
  * eta. Au-dela, le voilement de l'ame releve de l'EN 1993-1-5 §5, hors
  * perimetre : le module leve.
  */
-export function verifierVoilementCisaillement(p: Profil, m: Materiau, prop: Proprietes, profil: ProfilEc3): string {
+export function verifierVoilementCisaillement(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, profil: ProfilEc3): string {
   if (p.type !== 'I-lamine' && p.type !== 'I-soude') return 'Sans objet pour une section creuse dans cette version.';
   const lim = (72 * epsilon(m.fy)) / profil.eta.valeur;
   const el = prop.hw / p.tw;
@@ -144,7 +144,7 @@ export interface InteractionSection {
  * moments reduits par V par le facteur de reduction du a N.
  */
 export function interactionSection(
-  p: Profil,
+  p: ProfilDoublementSymetrique,
   m: Materiau,
   prop: Proprietes,
   classe: Classe,

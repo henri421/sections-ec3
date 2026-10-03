@@ -5,10 +5,26 @@
  * resistances de section, flambement, deversement, flexion composee.
  */
 
-export { E, G, epsilon, materiau, epaisseurMax, type Materiau, type Nuance, type Profil } from './model/profil';
+export {
+  E,
+  G,
+  epsilon,
+  materiau,
+  epaisseurMax,
+  epaisseurAileRacine,
+  estDoublementSymetrique,
+  type Materiau,
+  type Nuance,
+  type Profil,
+  type ProfilDoublementSymetrique,
+  type ProfilL,
+  type ProfilU,
+} from './model/profil';
 export { ec3Recommande, verifierProfil, type ProfilEc3, type ValeurSourcee } from './norms/profil';
 export { proprietes, rayonsTube, type Proprietes } from './proprietes/brutes';
-export { familles, profilCatalogue, provenance, type FamilleCatalogue } from './catalogue/charger';
+export { familles, profilCatalogue, corniereCatalogue, profilUCatalogue, provenance, type FamilleCatalogue, type TypeFamille } from './catalogue/charger';
+export { arrondir, integrales, axesPrincipaux, inertieAxe, modulePlastique, distancesExtremes, type Point, type Sommet, type Integrales } from './proprietes/contour';
+export { contours, contourL, contourU, corniereOrientee, torsion, excentriciteCisaillementU, proprietesNonSymetriques, type ProfilNonSymetrique, type Torsion } from './proprietes/formes';
 export { classifier, limitesParoiInterne, distributionAme, type Classe, type Classification, type ClasseParoi } from './classification/classifier';
 export {
   aireCisaillement,
