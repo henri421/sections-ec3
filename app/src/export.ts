@@ -21,7 +21,10 @@ svg .acier { fill: var(--beton); stroke: var(--texte); stroke-width: 1.5; }
 svg .vide { fill: var(--surface); stroke: var(--texte); stroke-width: 1.5; }
 svg .axe { stroke: var(--neutre); stroke-width: 1; stroke-dasharray: 5 4; }
 svg .axe-nom { fill: var(--texte-faible); font-size: 12px; }
-svg .nom { fill: var(--texte-doux); font-size: 12px; text-anchor: middle; }`;
+svg .nom { fill: var(--texte-doux); font-size: 12px; text-anchor: middle; }
+svg .axe-principal { stroke: var(--texte-doux); stroke-width: 1; stroke-dasharray: 2 3; }
+svg .point { fill: var(--texte); }
+svg .point-creux { fill: var(--surface); stroke: var(--texte); stroke-width: 1.5; }`;
 
 export interface NoteDeCalcul {
   titre: string;

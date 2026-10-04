@@ -6,14 +6,28 @@
  */
 
 import { lireNombre } from 'aedificium-ui';
-import type { DonneesElement, Nuance, ProfilDoublementSymetrique } from '../../src/index';
-import { profilCatalogue } from '../../src/index';
+import type { DonneesElement, DonneesNonSymetriques, Nuance, Profil, ProfilDoublementSymetrique } from '../../src/index';
+import { corniereCatalogue, estDoublementSymetrique, profilCatalogue, profilUCatalogue } from '../../src/index';
 
-export type TypeSaisie = 'catalogue' | 'I-soude' | 'tube-rectangulaire' | 'tube-circulaire';
+export type TypeSaisie = 'catalogue' | 'I-soude' | 'tube-rectangulaire' | 'tube-circulaire' | 'L' | 'U' | '2L' | '2U';
+const SOURCES = ['catalogue', 'I-soude', 'tube-rectangulaire', 'tube-circulaire', 'L', 'U', '2L', '2U'] as const;
 
 export interface ModeleSaisie {
   source: TypeSaisie;
   nomCatalogue: string;
+  /** Corniere (L, 2L) et profil en U (U, 2U) du catalogue. */
+  nomCorniere: string;
+  nomU: string;
+  /** 2L, 2U : epaisseur du gousset (mm) et espacement des liaisons (mm). */
+  ecartement: number;
+  espacement: number;
+  /** 2L : aile accolee au gousset. */
+  accolee: 'h' | 'b';
+  /** Corniere seule : L_cr,v (m) ; tous les profils non symetriques : L_T (m). */
+  Lcrv: number;
+  LT: number;
+  /** Corniere de treillis (annexe BB.1.2). */
+  treillis: boolean;
   h: number;
   b: number;
   tw: number;
@@ -53,6 +67,14 @@ export function modeleParDefaut(): ModeleSaisie {
   return {
     source: 'catalogue',
     nomCatalogue: 'HEB 200',
+    nomCorniere: 'L 100x100x10',
+    nomU: 'UPE 200',
+    ecartement: 10,
+    espacement: 250,
+    accolee: 'h',
+    Lcrv: 4,
+    LT: 4,
+    treillis: false,
     h: 200,
     b: 100,
     tw: 10,
@@ -102,7 +124,9 @@ function nombre(v: Record<string, string>, nom: string, requis: boolean, repli: 
 export function modeleDepuisChamps(v: Record<string, string>): Lecture {
   const d = modeleParDefaut();
   try {
-    const source = choix(v, 'source', ['catalogue', 'I-soude', 'tube-rectangulaire', 'tube-circulaire'] as const);
+    const source = choix(v, 'source', SOURCES);
+    const compose = source === '2L' || source === '2U';
+    const nonSym = source === 'L' || source === 'U' || compose;
     const soude = source === 'I-soude';
     const rhs = source === 'tube-rectangulaire';
     const chs = source === 'tube-circulaire';
@@ -116,6 +140,14 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
       modele: {
         source,
         nomCatalogue: v.nom_catalogue ?? d.nomCatalogue,
+        nomCorniere: v.nom_corniere ?? d.nomCorniere,
+        nomU: v.nom_u ?? d.nomU,
+        ecartement: nombre(v, 'ecartement', compose, d.ecartement),
+        espacement: nombre(v, 'espacement', compose, d.espacement),
+        accolee: choix(v, 'accolee', ['h', 'b'] as const),
+        Lcrv: nombre(v, 'lcrv', source === 'L', d.Lcrv),
+        LT: nombre(v, 'lt', nonSym, d.LT),
+        treillis: v.treillis === 'oui',
         h: nombre(v, 'h', soude || rhs, d.h),
         b: nombre(v, 'b', soude || rhs, d.b),
         tw: nombre(v, 'tw', soude, d.tw),
@@ -155,6 +187,14 @@ export function champsDepuisModele(m: ModeleSaisie): Record<string, string> {
   return {
     source: m.source,
     nom_catalogue: m.nomCatalogue,
+    nom_corniere: m.nomCorniere,
+    nom_u: m.nomU,
+    ecartement: n(m.ecartement),
+    espacement: n(m.espacement),
+    accolee: m.accolee,
+    lcrv: n(m.Lcrv),
+    lt: n(m.LT),
+    treillis: m.treillis ? 'oui' : 'non',
     h: n(m.h),
     b: n(m.b),
     tw: n(m.tw),
@@ -184,7 +224,20 @@ export function champsDepuisModele(m: ModeleSaisie): Record<string, string> {
   };
 }
 
+/** Profil doublement symetrique (I, tubes) ; leve pour une corniere ou un U. */
 export function profilDepuisModele(m: ModeleSaisie): ProfilDoublementSymetrique {
+  const p = profilGeneral(m);
+  if (!estDoublementSymetrique(p)) throw new Error('profilDepuisModele : profil non doublement symetrique, employer profilGeneral.');
+  return p;
+}
+
+/** Vrai pour une corniere, un U, un 2L ou un 2U. */
+export function estNonSymetrique(m: ModeleSaisie): boolean {
+  return m.source === 'L' || m.source === 'U' || m.source === '2L' || m.source === '2U';
+}
+
+/** Profil de toute forme. */
+export function profilGeneral(m: ModeleSaisie): Profil {
   switch (m.source) {
     case 'catalogue':
       return profilCatalogue(m.nomCatalogue);
@@ -194,14 +247,22 @@ export function profilDepuisModele(m: ModeleSaisie): ProfilDoublementSymetrique 
       return { type: 'tube-rectangulaire', nom: `RHS ${m.h} x ${m.b} x ${m.t}`, h: m.h, b: m.b, t: m.t, finition: m.finition };
     case 'tube-circulaire':
       return { type: 'tube-circulaire', nom: `CHS ${m.d} x ${m.t}`, d: m.d, t: m.t, finition: m.finition };
+    case 'L':
+      return corniereCatalogue(m.nomCorniere);
+    case 'U':
+      return profilUCatalogue(m.nomU);
+    case '2L':
+      return { type: '2L', nom: `2 ${m.nomCorniere} (gousset ${m.ecartement} mm)`, corniere: corniereCatalogue(m.nomCorniere), ecartement: m.ecartement, accolee: m.accolee };
+    case '2U':
+      return { type: '2U', nom: `2 ${m.nomU} (gousset ${m.ecartement} mm)`, profilU: profilUCatalogue(m.nomU), ecartement: m.ecartement };
   }
 }
 
 const MM_PAR_M = 1000;
 
-export function donneesDepuisModele(m: ModeleSaisie): DonneesElement {
+/** Sollicitations, longueurs et diagrammes, communs a toutes les formes. */
+function communes(m: ModeleSaisie): Omit<DonneesElement, 'profil'> {
   return {
-    profil: profilDepuisModele(m),
     nuance: m.nuance,
     N: m.N,
     My: m.My,
@@ -217,5 +278,23 @@ export function donneesDepuisModele(m: ModeleSaisie): DonneesElement {
     McrSaisi: m.Mcr,
     diagrammeY: m.diagrammeY === 'lineaire' ? { type: 'lineaire', psi: m.psiY } : { type: m.diagrammeY },
     diagrammeZ: m.diagrammeZ === 'lineaire' ? { type: 'lineaire', psi: m.psiZ } : { type: m.diagrammeZ },
+  };
+}
+
+export function donneesDepuisModele(m: ModeleSaisie): DonneesElement {
+  return { profil: profilDepuisModele(m), ...communes(m) };
+}
+
+/** Donnees du noyau pour une corniere, un U, un 2L ou un 2U. */
+export function donneesNonSymetriquesDepuisModele(m: ModeleSaisie): DonneesNonSymetriques {
+  const p = profilGeneral(m);
+  if (estDoublementSymetrique(p)) throw new Error('donneesNonSymetriquesDepuisModele : profil doublement symetrique.');
+  return {
+    profil: p,
+    ...communes(m),
+    Lcr_v: m.Lcrv * MM_PAR_M,
+    L_T: m.LT * MM_PAR_M,
+    barreDeTreillis: m.treillis,
+    espacementLiaisons: m.source === '2L' || m.source === '2U' ? m.espacement : null,
   };
 }

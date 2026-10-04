@@ -5,11 +5,25 @@
  */
 
 import { ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger, type BlocResultat } from 'aedificium-ui';
-import { ec3Recommande, provenance, verifierElement, type ResultatElement } from '../../src/index';
-import { champsDepuisModele, donneesDepuisModele, modeleDepuisChamps, modeleParDefaut, profilDepuisModele, type ModeleSaisie } from './form';
+import { ec3Recommande, familles, provenance, verifierElement, verifierNonSymetrique, type ResultatElement, type ResultatNonSymetrique } from '../../src/index';
+import {
+  champsDepuisModele,
+  donneesDepuisModele,
+  donneesNonSymetriquesDepuisModele,
+  estNonSymetrique,
+  modeleDepuisChamps,
+  modeleParDefaut,
+  profilGeneral,
+  type ModeleSaisie,
+} from './form';
 import {
   bandeauMcr,
+  bandeauNonSymetrique,
   blocs,
+  blocsNonSymetriques,
+  lignesInstabiliteNonSymetrique,
+  lignesProprietesNonSymetriques,
+  optionsCatalogue,
   dessinProfil,
   lignesClassification,
   lignesInstabilite,
@@ -78,6 +92,13 @@ function ajusterLesGroupes(m: ModeleSaisie): void {
     charge: m.diagramme !== 'lineaire',
     'lineaire-y': m.diagrammeY === 'lineaire',
     'lineaire-z': m.diagrammeZ === 'lineaire',
+    corniere: m.source === 'L' || m.source === '2L',
+    u: m.source === 'U' || m.source === '2U',
+    accolee: m.source === '2L',
+    compose: m.source === '2L' || m.source === '2U',
+    lcrv: m.source === 'L',
+    nonsym: estNonSymetrique(m),
+    treillis: m.source === 'L' || m.source === '2L',
   };
   for (const [g, visible] of Object.entries(vis)) exige<HTMLElement>(`[data-groupe="${g}"]`).hidden = !visible;
 }
@@ -87,11 +108,9 @@ function montrer(el: HTMLElement, message: string | null): void {
   el.hidden = message === null;
 }
 
-interface Etat {
-  modele: ModeleSaisie;
-  resultat: ResultatElement;
-  dessin: string;
-}
+type Etat =
+  | { forme: 'symetrique'; modele: ModeleSaisie; resultat: ResultatElement; dessin: string }
+  | { forme: 'non-symetrique'; modele: ModeleSaisie; resultat: ResultatNonSymetrique; dessin: string };
 
 let etat: Etat | null = null;
 
@@ -105,16 +124,27 @@ function rafraichir(): void {
   const m = lecture.modele;
   ajusterLesGroupes(m);
   try {
-    const r = verifierElement(donneesDepuisModele(m), PROFIL);
-    const dessin = dessinProfil(profilDepuisModele(m));
-    zones.mcr.innerHTML = bandeauMcr(r);
-    zones.verdict.innerHTML = verdictHtml(r);
-    zones.verifications.innerHTML = tableHtml(lignesVerifications(r));
+    const dessin = dessinProfil(profilGeneral(m));
     zones.dessin.innerHTML = dessin;
-    zones.proprietes.innerHTML = tableHtml(lignesProprietes(r));
-    zones.classification.innerHTML = tableHtml(lignesClassification(r));
-    zones.instabilites.innerHTML = tableHtml(lignesInstabilite(r));
-    etat = { modele: m, resultat: r, dessin };
+    if (estNonSymetrique(m)) {
+      const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), PROFIL);
+      zones.mcr.innerHTML = bandeauMcr(r) + bandeauNonSymetrique(r);
+      zones.verdict.innerHTML = verdictHtml(r);
+      zones.verifications.innerHTML = tableHtml(lignesVerifications(r));
+      zones.proprietes.innerHTML = tableHtml(lignesProprietesNonSymetriques(r));
+      zones.classification.innerHTML = tableHtml(lignesClassification(r));
+      zones.instabilites.innerHTML = tableHtml(lignesInstabiliteNonSymetrique(r));
+      etat = { forme: 'non-symetrique', modele: m, resultat: r, dessin };
+    } else {
+      const r = verifierElement(donneesDepuisModele(m), PROFIL);
+      zones.mcr.innerHTML = bandeauMcr(r);
+      zones.verdict.innerHTML = verdictHtml(r);
+      zones.verifications.innerHTML = tableHtml(lignesVerifications(r));
+      zones.proprietes.innerHTML = tableHtml(lignesProprietes(r));
+      zones.classification.innerHTML = tableHtml(lignesClassification(r));
+      zones.instabilites.innerHTML = tableHtml(lignesInstabilite(r));
+      etat = { forme: 'symetrique', modele: m, resultat: r, dessin };
+    }
     montrer(zones.erreur, null);
   } catch (e) {
     montrer(zones.erreur, messageDErreur(e));
@@ -122,7 +152,7 @@ function rafraichir(): void {
 }
 
 function entrees(m: ModeleSaisie): BlocResultat {
-  const p = profilDepuisModele(m);
+  const p = profilGeneral(m);
   return {
     titre: 'Donnees',
     lignes: [
@@ -141,36 +171,58 @@ document.addEventListener('click', (ev) => {
   const action = cible.dataset.action;
   if (action === undefined || !action.startsWith('exporter-') || etat === null) return;
   const e = etat;
-  const nom = profilDepuisModele(e.modele).nom.replace(/\s+/g, '');
+  const nom = profilGeneral(e.modele).nom.replace(/[^A-Za-z0-9,.-]+/g, '');
+  const resultats = e.forme === 'symetrique' ? blocs(e.resultat) : blocsNonSymetriques(e.resultat);
   if (action === 'exporter-dessin') {
     telecharger(`${nom}.svg`, svgAutonome(e.dessin, STYLES_TRACE), 'image/svg+xml;charset=utf-8');
   } else if (action === 'exporter-resultats') {
-    telecharger(`${nom}-resultats.csv`, resultatsEnCsv([entrees(e.modele), ...blocs(e.resultat)]), 'text/csv;charset=utf-8');
+    telecharger(`${nom}-resultats.csv`, resultatsEnCsv([entrees(e.modele), ...resultats]), 'text/csv;charset=utf-8');
   } else if (action === 'exporter-note') {
     const m = e.resultat.deversement.M_cr;
-    ouvrirOuTelecharger(
-      `${nom}-note.html`,
-      noteDeCalculHtml(
-        {
-          titre: `${profilDepuisModele(e.modele).nom}, ${e.modele.nuance}`,
-          date: new Date().toISOString().slice(0, 10),
-          profil: `${PROFIL.nom} (${PROFIL.date})`,
-          entrees: [entrees(e.modele)],
-          dessins: [e.dessin],
-          resultats: blocs(e.resultat),
-          avertissements: m !== null && m.origine === 'hors-norme' ? [`M_cr calcule HORS NORME : ${m.source}.`] : [],
-          hypotheses: [
+    const avertissements = m !== null && m.origine === 'hors-norme' ? [`M_cr calcule HORS NORME : ${m.source}.`] : [];
+    if (e.forme === 'non-symetrique') {
+      if (e.resultat.flambements.length > 0) avertissements.push('N_cr de torsion et de flexion-torsion calcule HORS NORME (theorie des parois minces).');
+      if (e.resultat.deversement.aFournir) avertissements.push('Deversement NON VERIFIE : M_cr a fournir.');
+      avertissements.push(...e.resultat.avertissements);
+    }
+    const hypotheses =
+      e.forme === 'symetrique'
+        ? [
             'Proprietes recalculees a partir des dimensions nominales ; aucune classe stockee.',
             'Semelles classees en compression uniforme, du cote de la securite.',
             'Facteurs k_ij de l annexe B du §6.3.3 ; C_m pour des moments lineaires.',
             'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
-          ],
+          ]
+        : [
+            'Proprietes recalculees sur le contour ; I_t, I_w et centre de cisaillement des profils lamines repris du producteur.',
+            'Classe 4 : section efficace unique, toutes parois en compression uniforme (EN 1993-1-5 §4.4).',
+            'Interaction N-M de section par le critere lineaire (6.2), (6.44) en classe 4.',
+            'Annexe B du §6.3.3 etendue aux cornieres, U et 2L, hors de son domaine.',
+            'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
+          ];
+    ouvrirOuTelecharger(
+      `${nom}-note.html`,
+      noteDeCalculHtml(
+        {
+          titre: `${profilGeneral(e.modele).nom}, ${e.modele.nuance}`,
+          date: new Date().toISOString().slice(0, 10),
+          profil: `${PROFIL.nom} (${PROFIL.date})`,
+          entrees: [entrees(e.modele)],
+          dessins: [e.dessin],
+          resultats,
+          avertissements,
+          hypotheses,
         },
         STYLES_TRACE
       )
     );
   }
 });
+
+// Listes des cornieres et des U, tirees du catalogue (trop longues pour le HTML).
+const parType = (t: 'L' | 'U') => familles().filter((f) => f.type === t);
+exige<HTMLSelectElement>('[data-champ="nom_corniere"]').innerHTML = optionsCatalogue(parType('L'));
+exige<HTMLSelectElement>('[data-champ="nom_u"]').innerHTML = optionsCatalogue(parType('U'));
 
 ecrireModele(modeleParDefaut());
 formulaire.addEventListener('input', rafraichir);

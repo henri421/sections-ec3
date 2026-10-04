@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { JETONS, valeursDesJetons } from 'aedificium-ui';
-import { ec3Recommande, profilCatalogue, verifierElement } from '../../src/index';
-import { champsDepuisModele, donneesDepuisModele, modeleDepuisChamps, modeleParDefaut, profilDepuisModele } from '../../app/src/form';
-import { bandeauMcr, blocs, dessinProfil, lignesVerifications } from '../../app/src/vue';
+import { ec3Recommande, familles, profilCatalogue, verifierElement, verifierNonSymetrique } from '../../src/index';
+import { champsDepuisModele, donneesDepuisModele, donneesNonSymetriquesDepuisModele, estNonSymetrique, modeleDepuisChamps, modeleParDefaut, profilDepuisModele, profilGeneral } from '../../app/src/form';
+import { bandeauMcr, bandeauNonSymetrique, blocs, blocsNonSymetriques, dessinProfil, lignesVerifications, optionsCatalogue, verdictHtml } from '../../app/src/vue';
 
 const P = ec3Recommande();
 
@@ -63,3 +63,57 @@ describe('vues', () => {
     for (const [nom, valeur] of valeursDesJetons(JETONS)) expect(page.get(nom)).toBe(valeur);
   });
 });
+
+describe('cornieres, U, 2L et 2U dans l interface', () => {
+  const sources = ['L', 'U', '2L', '2U'] as const;
+
+  it('chaque source se calcule, avec un dessin sans NaN et les cinq blocs de sortie', () => {
+    for (const source of sources) {
+      const m = { ...modeleParDefaut(), source };
+      expect(estNonSymetrique(m)).toBe(true);
+      const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), P);
+      expect(blocsNonSymetriques(r).map((b) => b.titre)).toEqual(['Proprietes recalculees', 'Classification (§5.5)', 'Verifications', 'Instabilites (§6.3)', 'Verdict']);
+      const svg = dessinProfil(profilGeneral(m));
+      expect(svg).not.toContain('NaN');
+      expect(svg).toContain('>C</text>');
+    }
+  });
+
+  it('corniere seule : axes principaux u, v dessines ; 2L : pas d axes principaux', () => {
+    expect(dessinProfil(profilGeneral({ ...modeleParDefaut(), source: 'L' }))).toContain('>u</text>');
+    expect(dessinProfil(profilGeneral({ ...modeleParDefaut(), source: '2L' }))).not.toContain('>u</text>');
+  });
+
+  it('champs propres : aller-retour, longueurs en m, espacement des liaisons transmis aux seuls profils composes', () => {
+    const m = { ...modeleParDefaut(), source: '2L' as const, Lcrv: 2.5, LT: 3, espacement: 250, treillis: true };
+    const l = modeleDepuisChamps(champsDepuisModele(m));
+    expect(l.ok).toBe(true);
+    if (!l.ok) return;
+    expect(champsDepuisModele(l.modele)).toEqual(champsDepuisModele(m));
+    const d = donneesNonSymetriquesDepuisModele(l.modele);
+    expect(d.Lcr_v).toBe(2500);
+    expect(d.L_T).toBe(3000);
+    expect(d.espacementLiaisons).toBe(250);
+    expect(d.barreDeTreillis).toBe(true);
+    expect(donneesNonSymetriquesDepuisModele({ ...m, source: 'L' }).espacementLiaisons).toBeNull();
+  });
+
+  it('profilDepuisModele refuse une corniere : la page passe par profilGeneral', () => {
+    expect(() => profilDepuisModele({ ...modeleParDefaut(), source: 'L' })).toThrow('profilGeneral');
+  });
+
+  it('verdict incomplet et bandeau : deversement non verifie signale', () => {
+    const m = { ...modeleParDefaut(), source: 'L' as const, N: 20, My: 1 };
+    const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), P);
+    expect(verdictHtml(r)).toContain('Verification incomplete');
+    expect(bandeauNonSymetrique(r)).toContain('NON VERIFIE');
+    expect(bandeauNonSymetrique(r)).toContain('HORS NORME');
+  });
+
+  it('listes du catalogue : toutes les cornieres et tous les U', () => {
+    const html = optionsCatalogue(familles().filter((f) => f.type === 'L'));
+    expect(html).toContain('<optgroup label="L-egales">');
+    expect((html.match(/<option /g) ?? []).length).toBe(224);
+  });
+});
+

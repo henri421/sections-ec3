@@ -31,10 +31,9 @@ Page publiée : <https://henri421.github.io/sections-ec3/>.
 - **Flexion composée** (§6.3.3) : facteurs k_ij de l'**annexe B**, choix porté par le profil
   normatif.
 
-## En cours : cornières, profils en U, 2L et 2U
+## Cornières, profils en U, 2L et 2U
 
-Plan : [`PLAN-cornieres-et-u.md`](PLAN-cornieres-et-u.md). Fait (noyau, pas encore dans
-l'interface) :
+Plan : [`PLAN-cornieres-et-u.md`](PLAN-cornieres-et-u.md). Disponibles dans l'interface :
 
 - catalogue **L à ailes égales et inégales** (EN 10056-1), **UPE** et **UPN** (gamme ArcelorMittal) ;
 - moteur géométrique général : centre de gravité, **axes principaux u, v**, axe neutre plastique
@@ -52,7 +51,8 @@ l'interface) :
   verdict **incomplet** ;
 - garde-fou : une cornière ou un U ne traverse pas les vérifications des sections en I.
 
-Reste l'interface (lot 10).
+Point ouvert : cornières de 140 à 300 mm en barre de treillis, flambement autour de v 2 à 6,6 %
+au-dessus des tableaux du producteur aux faibles longueurs (voir la note de validation).
 
 ## Hors périmètre de la version 1
 

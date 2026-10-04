@@ -347,6 +347,9 @@ svg .vide { fill: var(--surface); stroke: var(--texte); stroke-width: 1.5; }
 svg .axe { stroke: var(--neutre); stroke-width: 1; stroke-dasharray: 5 4; }
 svg .axe-nom { fill: var(--texte-faible); font-size: 12px; }
 svg .nom { fill: var(--texte-doux); font-size: 12px; text-anchor: middle; }
+svg .axe-principal { stroke: var(--texte-doux); stroke-width: 1; stroke-dasharray: 2 3; }
+svg .point { fill: var(--texte); }
+svg .point-creux { fill: var(--surface); stroke: var(--texte); stroke-width: 1.5; }
 
 .deux {
   display: grid;
@@ -373,6 +376,7 @@ h3 {
 
 .verdict-conforme { border-color: var(--ok); background: var(--ok-fond); color: var(--ok); }
 .verdict-non-conforme { border-color: var(--refus); background: var(--refus-fond); color: var(--refus); }
+.verdict-incomplet { border-color: var(--alerte); background: var(--alerte-fond); color: var(--alerte); }
 
 .motif {
   margin: 0 0 0.8rem;

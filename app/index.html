@@ -20,7 +20,8 @@
       <h1>sections-ec3</h1>
       <p class="sous-titre">
         Profils acier selon l'EN 1993-1-1 : proprietes recalculees, classification sous la sollicitation reelle,
-        resistances de section, flambement, deversement et flexion composee (annexe B).
+        resistances de section, flambement, deversement et flexion composee (annexe B). Profils en I, tubes,
+        cornieres, U, et profils composes 2L et 2U.
       </p>
       <p class="avertissement">
         Aide au calcul : l'outil constate, il ne prescrit pas. Valeurs recommandees, sans annexe nationale.
@@ -39,8 +40,30 @@
                 <option value="I-soude">I soude (PRS)</option>
                 <option value="tube-rectangulaire">tube rectangulaire</option>
                 <option value="tube-circulaire">tube circulaire</option>
+                <option value="L">corniere (L)</option>
+                <option value="U">profil en U (UPE, UPN)</option>
+                <option value="2L">deux cornieres dos a dos (2L)</option>
+                <option value="2U">deux U dos a dos (2U)</option>
               </select>
             </label>
+            <div class="groupe" data-groupe="corniere">
+              <label><span>Corniere</span><select data-champ="nom_corniere"></select></label>
+            </div>
+            <div class="groupe" data-groupe="u">
+              <label><span>Profil en U</span><select data-champ="nom_u"></select></label>
+            </div>
+            <div class="groupe" data-groupe="accolee">
+              <label><span>Aile accolee au gousset</span>
+                <select data-champ="accolee">
+                  <option value="h">grande aile h</option>
+                  <option value="b">petite aile b</option>
+                </select>
+              </label>
+            </div>
+            <div class="groupe" data-groupe="compose">
+              <label><span>Gousset entre profils (mm)</span><input type="text" inputmode="decimal" data-champ="ecartement" /></label>
+              <label><span>Espacement des liaisons (mm)</span><input type="text" inputmode="decimal" data-champ="espacement" /></label>
+            </div>
             <div class="groupe" data-groupe="catalogue">
               <label><span>Profil</span>
                 <select data-champ="nom_catalogue">
@@ -111,6 +134,15 @@
             <legend>Element</legend>
             <label><span>L<sub>cr,y</sub> (m)</span><input type="text" inputmode="decimal" data-champ="lcry" /></label>
             <label><span>L<sub>cr,z</sub> (m)</span><input type="text" inputmode="decimal" data-champ="lcrz" /></label>
+            <div class="groupe" data-groupe="lcrv">
+              <label><span>L<sub>cr,v</sub>, axe faible de la corniere (m)</span><input type="text" inputmode="decimal" data-champ="lcrv" /></label>
+            </div>
+            <div class="groupe" data-groupe="nonsym">
+              <label><span>L<sub>T</sub>, flambement par torsion (m)</span><input type="text" inputmode="decimal" data-champ="lt" /></label>
+            </div>
+            <div class="groupe" data-groupe="treillis">
+              <label class="case"><input type="checkbox" data-champ="treillis" /><span>corniere de treillis, au moins deux boulons (annexe BB.1.2)</span></label>
+            </div>
             <label><span>L entre maintiens lateraux (m)</span><input type="text" inputmode="decimal" data-champ="llt" /></label>
             <label class="case"><input type="checkbox" data-champ="empeche" /><span>membrure comprimee maintenue en continu</span></label>
             <label><span>Moment entre maintiens</span>
@@ -171,9 +203,10 @@
 
     <footer>
       <p>
-        Hors perimetre : sections de classe 4 (EN 1993-1-5 §4) ; annexe A du §6.3.3 ; torsion ; sections
-        monosymetriques ; flambement par torsion et flexion-torsion ; voilement par cisaillement au-dela du critere
-        du §6.2.6(6) ; assemblages (voir assemblages-ec3).
+        Hors perimetre : classe 4 des profils en I et des tubes (EN 1993-1-5 §4) ; annexe A du §6.3.3 ; torsion
+        (charge hors du centre de cisaillement) ; deversement des cornieres sans M<sub>cr</sub> saisi ; barres a membrures
+        ecartees (§6.4) ; voilement par cisaillement au-dela du critere du §6.2.6(6) ; assemblages et section nette
+        (voir assemblages-ec3).
       </p>
     </footer>
 
