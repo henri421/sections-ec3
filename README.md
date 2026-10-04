@@ -43,7 +43,16 @@ l'interface) :
   deux valeurs publiées écartées avec leur motif) ;
 - I_t, I_w et centre de cisaillement des L et U laminés **repris du producteur** (voir les choix
   déclarés) ;
+- classification (tableau 5.2 feuille 3 pour les cornières) et **classe 4** (EN 1993-1-5 §4.4) ;
+- résistances de section (axes principaux pour les cornières), flambement par flexion et par
+  **flexion-torsion** (hors norme, signalé), annexe BB.1.2 pour les cornières de treillis ;
+- déversement des U et 2U (méthode générale, courbe d) ; cornières : M_cr à fournir ;
+- flexion composée §6.3.3 ; règle d'espacement des liaisons des 2L et 2U (tableau 6.9) ;
+- vérification complète par `verifierNonSymetrique` ; une cornière fléchie sans M_cr rend un
+  verdict **incomplet** ;
 - garde-fou : une cornière ou un U ne traverse pas les vérifications des sections en I.
+
+Reste l'interface (lot 10).
 
 ## Hors périmètre de la version 1
 
@@ -65,6 +74,12 @@ relèvent de `assemblages-ec3`.
   (h + b − t) t³ / 3, expression minorante.
 - UPN : pente des ailes de 8 % jusqu'à UPN 300 (t_f à b/2), 5 % au-delà (t_f au milieu de l'aile),
   convention calée sur les valeurs publiées.
+- §6.3.3 des L, U et 2L : annexe B **étendue** hors de son domaine (sections doublement
+  symétriques), formules de classe 3, χ minimal entre flexion et flexion-torsion pour chaque terme.
+- Interaction N-M de section des L, U, 2L, 2U : critère linéaire (6.2), (6.44) en classe 4.
+- Classe 4 des L, U, 2L, 2U : section efficace unique, toutes parois en compression uniforme.
+- Déversement des U : méthode générale (§6.3.2.2, courbe d), plus prudente que le §6.3.2.3 de
+  l'annexe nationale britannique employé par les tableaux du producteur.
 - C_m (tableau B.3) : moments d'extrémité linéaires, ou charge répartie / concentrée sur appuis simples (M_h = 0) ; les diagrammes mixtes (moments d'extrémité et charge transversale) ne sont pas traités.
 
 ## Développement

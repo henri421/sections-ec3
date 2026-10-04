@@ -75,7 +75,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
   // ((6.36) a (6.40), M_cr des I, flambement par flexion seul). Une corniere
   // ou un U n'y passe pas, plutot que d'y recevoir un resultat faux.
   if (!estDoublementSymetrique(d.profil)) {
-    throw new Error(`Profil « ${d.profil.nom} » (${d.profil.type}) : verification des cornieres et profils en U non encore disponible (proprietes seules).`);
+    throw new Error(`Profil « ${d.profil.nom} » (${d.profil.type}) : employer verifierNonSymetrique pour les cornieres, U, 2L et 2U.`);
   }
   const p = d.profil;
   const prop = proprietes(p);

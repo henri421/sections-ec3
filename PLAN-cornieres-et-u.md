@@ -20,6 +20,9 @@ Chaque lot se termine par les tests au vert (banc local), le typecheck en CI et 
   de section (critère linéaire (6.2), (6.44) en classe 4), flambement par flexion et
   flexion-torsion. Point ouvert : cornières de 140 à 300 mm, flambement de treillis 2 à 6,6 % au-dessus
   des valeurs publiées aux faibles longueurs (voir la note de validation).
+- **Lots 7 à 9 faits** (2026-10-04) : déversement (M_cr des U recoupé à 0,45 %), §6.3.3 étendu,
+  tableau 6.9, orchestration `verifierNonSymetrique` avec verdict « incomplet ». Reste le lot 10
+  (interface).
 - **Écart au plan, lot 3** : I_t, I_w et e₀ des L et U laminés sont **repris du producteur**, et
   non recalculés. Les formules usuelles s'écartent de −20 à +17 % des valeurs publiées
   (surestimation non conservative pour la flexion-torsion et le déversement).

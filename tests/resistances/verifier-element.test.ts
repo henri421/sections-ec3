@@ -56,7 +56,7 @@ describe('verifierElement', () => {
   });
 
   it('garde-fou : une corniere ou un U ne traverse pas les verifications des sections en I', () => {
-    expect(() => verifierElement(element({ profil: corniereCatalogue('L 100x100x10') }), P)).toThrow('non encore disponible');
-    expect(() => verifierElement(element({ profil: profilUCatalogue('UPN 200') }), P)).toThrow('non encore disponible');
+    expect(() => verifierElement(element({ profil: corniereCatalogue('L 100x100x10') }), P)).toThrow('verifierNonSymetrique');
+    expect(() => verifierElement(element({ profil: profilUCatalogue('UPN 200') }), P)).toThrow('verifierNonSymetrique');
   });
 });

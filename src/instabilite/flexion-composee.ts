@@ -11,7 +11,7 @@
  */
 
 import type { Classe } from '../classification/classifier';
-import type { ProfilDoublementSymetrique } from '../model/profil';
+import type { Profil } from '../model/profil';
 import type { ProfilEc3 } from '../norms/profil';
 import { fr } from '../norms/profil';
 import type { DiagrammeLT } from './deversement';
@@ -37,7 +37,7 @@ export function coefficientCmDiagramme(d: DiagrammeLT): number {
 }
 
 export interface EntreesInteraction {
-  profil: ProfilDoublementSymetrique;
+  profil: Profil;
   classe: Classe;
   NEd: number;
   MyEd: number;
@@ -56,6 +56,11 @@ export interface EntreesInteraction {
   CmLT: number;
   /** Element sensible aux deformations de torsion (I non maintenu au deversement). */
   sensibleTorsion: boolean;
+  /** Moments additionnels N e_N des sections de classe 4 (kN.m), termes Delta M de (6.61) et (6.62). */
+  dMy?: number;
+  dMz?: number;
+  /** Mention ajoutee au motif quand l'annexe B est employee hors de son domaine. */
+  horsDomaine?: string;
 }
 
 export interface Interaction633 {
@@ -71,7 +76,7 @@ export interface Interaction633 {
 
 /**
  * Tableaux B.1 (non sensible) et B.2 (sensible a la torsion), puis
- * expressions (6.61) et (6.62) avec Delta M = 0 (classes 1 a 3).
+ * expressions (6.61) et (6.62), Delta M = N e_N en classe 4 (nul sinon).
  */
 export function interaction633(e: EntreesInteraction, profil: ProfilEc3): Interaction633 {
   const annexe = profil.annexe633.valeur;
@@ -80,7 +85,8 @@ export function interaction633(e: EntreesInteraction, profil: ProfilEc3): Intera
   }
   const nY = e.NEd / (e.chi_y * e.NRd1);
   const nZ = e.NEd / (e.chi_z * e.NRd1);
-  const enI = e.profil.type === 'I-lamine' || e.profil.type === 'I-soude';
+  // 2U dos a dos : section en I doublement symetrique, formules des I.
+  const enI = e.profil.type === 'I-lamine' || e.profil.type === 'I-soude' || e.profil.type === '2U';
   let kyy: number;
   let kzz: number;
   let kyz: number;
@@ -106,8 +112,8 @@ export function interaction633(e: EntreesInteraction, profil: ProfilEc3): Intera
       ? Math.max(1 - (0.05 * e.lambda_z * nZ) / (e.CmLT - 0.25), 1 - (0.05 * nZ) / (e.CmLT - 0.25))
       : 0.8 * kyy;
   }
-  const My = Math.abs(e.MyEd);
-  const Mz = Math.abs(e.MzEd);
+  const My = Math.abs(e.MyEd) + (e.dMy ?? 0);
+  const Mz = Math.abs(e.MzEd) + (e.dMz ?? 0);
   const taux61 = nY + (kyy * My) / (e.chi_LT * e.MyRd1) + (kyz * Mz) / e.MzRd1;
   const taux62 = nZ + (kzy * My) / (e.chi_LT * e.MyRd1) + (kzz * Mz) / e.MzRd1;
   return {
@@ -118,6 +124,6 @@ export function interaction633(e: EntreesInteraction, profil: ProfilEc3): Intera
     kzz,
     taux61,
     taux62,
-    motif: `Annexe B (${e.sensibleTorsion ? 'tableau B.2, element sensible a la torsion' : 'tableau B.1'}), classe ${e.classe} ; C_my = ${fr(e.Cmy, 3)}, C_mz = ${fr(e.Cmz, 3)}${e.sensibleTorsion ? `, C_mLT = ${fr(e.CmLT, 3)}` : ''}`,
+    motif: `Annexe B (${e.sensibleTorsion ? 'tableau B.2, element sensible a la torsion' : 'tableau B.1'}), classe ${e.classe} ; C_my = ${fr(e.Cmy, 3)}, C_mz = ${fr(e.Cmz, 3)}${e.sensibleTorsion ? `, C_mLT = ${fr(e.CmLT, 3)}` : ''}${e.horsDomaine ? ` ; ${e.horsDomaine}` : ''}`,
   };
 }
