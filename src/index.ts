@@ -58,6 +58,7 @@ export {
   type ModeFlambement,
   type TorsionFlexion,
 } from './instabilite/flexion-torsion';
+export { deversementNonSymetrique, LAMBDA_LT0_GENERALE, type DeversementNonSymetrique } from './instabilite/deversement-non-symetrique';
 export { flambement, courbeFlambement, facteurReduction, ALPHA, type Courbe, type Flambement } from './instabilite/flambement';
 export {
   momentCritique,
