@@ -90,8 +90,10 @@ function ajusterLesGroupes(m: ModeleSaisie): void {
     tube: m.source === 'tube-rectangulaire' || m.source === 'tube-circulaire',
     lineaire: m.diagramme === 'lineaire',
     charge: m.diagramme !== 'lineaire',
-    'lineaire-y': m.diagrammeY === 'lineaire',
-    'lineaire-z': m.diagrammeZ === 'lineaire',
+    'lineaire-y': m.diagrammeY === 'lineaire' || m.diagrammeY.startsWith('mixte'),
+    'lineaire-z': m.diagrammeZ === 'lineaire' || m.diagrammeZ.startsWith('mixte'),
+    'mixte-y': m.diagrammeY.startsWith('mixte'),
+    'mixte-z': m.diagrammeZ.startsWith('mixte'),
     corniere: m.source === 'L' || m.source === '2L',
     u: m.source === 'U' || m.source === '2U',
     accolee: m.source === '2L',
@@ -151,6 +153,14 @@ function rafraichir(): void {
   }
 }
 
+/** Le diagramme saisi, en clair, pour la note : l'ecran le montre, la note le dit. */
+function texteDiagramme(type: string, psi: number, Mh: number, Ms: number): string {
+  if (type === 'lineaire') return `lineaire, psi = ${psi}`;
+  if (type === 'repartie') return 'charge repartie, appuis simples';
+  if (type === 'concentree-milieu') return 'charge concentree a mi-portee';
+  return `mixte (${type === 'mixte-repartie' ? 'repartie' : 'concentree'}) : M_h = ${Mh} kN.m, psi = ${psi}, M_s = ${Ms} kN.m`;
+}
+
 function entrees(m: ModeleSaisie): BlocResultat {
   const p = profilGeneral(m);
   return {
@@ -160,6 +170,9 @@ function entrees(m: ModeleSaisie): BlocResultat {
       { symbole: 'N, M_y, M_z', libelle: 'sollicitations de calcul', valeur: `${m.N} kN ; ${m.My} ; ${m.Mz} kN.m` },
       { symbole: 'V_z, V_y', libelle: 'efforts tranchants', valeur: `${m.Vz} ; ${m.Vy} kN` },
       { symbole: 'L_cr,y, L_cr,z, L', libelle: 'longueurs de flambement, entre maintiens', valeur: `${m.Lcry} ; ${m.Lcrz} ; ${m.LLT} m` },
+      { symbole: 'diagramme LT', libelle: 'deversement (C1, C2, C_mLT)', valeur: texteDiagramme(m.diagramme, m.psiLT, 0, 0) },
+      { symbole: 'diagramme M_y', libelle: 'C_my, tableau B.3', valeur: texteDiagramme(m.diagrammeY, m.psiY, m.MhY, m.MsY) },
+      { symbole: 'diagramme M_z', libelle: 'C_mz, tableau B.3', valeur: texteDiagramme(m.diagrammeZ, m.psiZ, m.MhZ, m.MsZ) },
     ],
     note: null,
   };

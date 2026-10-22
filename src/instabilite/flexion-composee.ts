@@ -16,6 +16,57 @@ import type { ProfilEc3 } from '../norms/profil';
 import { fr } from '../norms/profil';
 import type { DiagrammeLT } from './deversement';
 
+/**
+ * Diagramme mixte : moments d'extremite ET charge transversale (tableau B.3,
+ * lignes 2 et 3).
+ *   M_h : moment d'extremite de plus grande valeur absolue (kN.m) ;
+ *   psi : rapport de l'autre moment d'extremite a M_h, entre -1 et 1 ;
+ *   M_s : moment en travee du diagramme TOTAL, a mi-portee (kN.m) ;
+ *   charge : repartie ou concentree.
+ */
+export interface DiagrammeMixte {
+  type: 'mixte';
+  charge: 'repartie' | 'concentree';
+  Mh: number;
+  psi: number;
+  Ms: number;
+}
+
+/** Diagrammes admis pour C_m : ceux du deversement, plus le diagramme mixte. */
+export type DiagrammeCm = DiagrammeLT | DiagrammeMixte;
+
+/**
+ * C_m d'un diagramme mixte, tableau B.3 de l'EN 1993-1-1, annexe B :
+ *
+ *   |M_s| <= |M_h|, alpha_s = M_s / M_h :
+ *     0 <= alpha_s <= 1  : 0,2 + 0,8 alpha_s >= 0,4 (deux types de charge) ;
+ *     -1 <= alpha_s < 0  : psi >= 0 : repartie 0,1 - 0,8 alpha_s, concentree -0,8 alpha_s ;
+ *                          psi < 0  : repartie 0,1 (1 - psi) - 0,8 alpha_s,
+ *                                     concentree 0,2 (-psi) - 0,8 alpha_s ; tous >= 0,4 ;
+ *   |M_s| > |M_h|, alpha_h = M_h / M_s :
+ *     repartie 0,95 + 0,05 alpha_h, concentree 0,90 + 0,10 alpha_h,
+ *     le terme en alpha_h multiplie par (1 + 2 psi) si alpha_h < 0 et psi < 0.
+ *
+ * M_h = 0 avec M_s non nul redonne la ligne « appuis simples » (0,95 ou 0,90).
+ */
+export function coefficientCmMixte(d: DiagrammeMixte): number {
+  const { Mh, Ms, psi } = d;
+  if (!Number.isFinite(psi) || psi < -1 || psi > 1) throw new Error('psi doit etre compris entre -1 et 1 (-).');
+  if (!Number.isFinite(Mh) || !Number.isFinite(Ms)) throw new Error('M_h et M_s doivent etre des nombres (kN.m).');
+  if (Mh === 0 && Ms === 0) throw new Error('Diagramme mixte nul : M_h et M_s ne peuvent pas etre tous deux nuls.');
+  const repartie = d.charge === 'repartie';
+
+  if (Math.abs(Ms) <= Math.abs(Mh)) {
+    const as = Ms / Mh;
+    if (as >= 0) return Math.max(0.4, 0.2 + 0.8 * as);
+    const brut = psi >= 0 ? (repartie ? 0.1 : 0) - 0.8 * as : (repartie ? 0.1 * (1 - psi) : 0.2 * -psi) - 0.8 * as;
+    return Math.max(0.4, brut);
+  }
+  const ah = Mh / Ms;
+  const facteur = ah < 0 && psi < 0 ? 1 + 2 * psi : 1;
+  return repartie ? 0.95 + 0.05 * ah * facteur : 0.9 + 0.1 * ah * facteur;
+}
+
 /** C_m pour un moment lineaire, tableau B.3 : 0,6 + 0,4 psi >= 0,4. */
 export function coefficientCm(psi: number): number {
   return Math.max(0.4, 0.6 + 0.4 * psi);
@@ -29,7 +80,8 @@ export function coefficientCm(psi: number): number {
  * Appliquer la formule lineaire a une charge transversale (psi = 0 donnant
  * 0,6) serait non conservatif.
  */
-export function coefficientCmDiagramme(d: DiagrammeLT): number {
+export function coefficientCmDiagramme(d: DiagrammeCm): number {
+  if (d.type === 'mixte') return coefficientCmMixte(d);
   if (d.type === 'repartie') return 0.95;
   if (d.type === 'concentree-milieu') return 0.9;
   if (!Number.isFinite(d.psi) || d.psi < -1 || d.psi > 1) throw new Error('psi doit etre compris entre -1 et 1 (-).');

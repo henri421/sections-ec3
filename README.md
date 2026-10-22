@@ -80,7 +80,13 @@ relèvent de `assemblages-ec3`.
 - Classe 4 des L, U, 2L, 2U : section efficace unique, toutes parois en compression uniforme.
 - Déversement des U : méthode générale (§6.3.2.2, courbe d), plus prudente que le §6.3.2.3 de
   l'annexe nationale britannique employé par les tableaux du producteur.
-- C_m (tableau B.3) : moments d'extrémité linéaires, ou charge répartie / concentrée sur appuis simples (M_h = 0) ; les diagrammes mixtes (moments d'extrémité et charge transversale) ne sont pas traités.
+- C_m (tableau B.3) : tableau complet, y compris les diagrammes mixtes (moments d'extrémité et charge transversale répartie ou concentrée, saisis par M_h, ψ et M_s). Le déversement (C1, C2) reste limité aux trois diagrammes simples ; pour un diagramme mixte, saisir M_cr.
+
+## Paquet importable
+
+Le noyau s'importe depuis un autre dépôt de la suite (`exports` vers `src/index.ts`), par exemple
+`"sections-ec3": "github:henri421/sections-ec3#v0.2.0"`. Le catalogue de profils est un JSON
+importé : le consommateur doit activer `resolveJsonModule`.
 
 ## Développement
 

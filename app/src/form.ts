@@ -6,7 +6,7 @@
  */
 
 import { lireNombre } from 'aedificium-ui';
-import type { DonneesElement, DonneesNonSymetriques, Nuance, Profil, ProfilDoublementSymetrique } from '../../src/index';
+import type { DiagrammeCm, DonneesElement, DonneesNonSymetriques, Nuance, Profil, ProfilDoublementSymetrique } from '../../src/index';
 import { corniereCatalogue, estDoublementSymetrique, profilCatalogue, profilUCatalogue } from '../../src/index';
 
 export type TypeSaisie = 'catalogue' | 'I-soude' | 'tube-rectangulaire' | 'tube-circulaire' | 'L' | 'U' | '2L' | '2U';
@@ -51,14 +51,32 @@ export interface ModeleSaisie {
   point: 'semelle-superieure' | 'centre' | 'semelle-inferieure';
   /** null : M_cr par l'expression hors norme. */
   Mcr: number | null;
-  diagrammeY: TypeDiagramme;
+  diagrammeY: TypeDiagrammeCm;
   psiY: number;
-  diagrammeZ: TypeDiagramme;
+  /** Diagramme mixte : moment d'extremite M_h et moment en travee M_s (kN.m). */
+  MhY: number;
+  MsY: number;
+  diagrammeZ: TypeDiagrammeCm;
   psiZ: number;
+  MhZ: number;
+  MsZ: number;
 }
 
 export type TypeDiagramme = 'lineaire' | 'repartie' | 'concentree-milieu';
 const DIAGRAMMES = ['lineaire', 'repartie', 'concentree-milieu'] as const;
+
+/** Diagrammes pour C_m : ceux du deversement, plus les diagrammes mixtes du tableau B.3. */
+export type TypeDiagrammeCm = TypeDiagramme | 'mixte-repartie' | 'mixte-concentree';
+const DIAGRAMMES_CM = [...DIAGRAMMES, 'mixte-repartie', 'mixte-concentree'] as const;
+
+/** Le diagramme de C_m tel que le noyau l'attend. */
+function diagrammeCm(type: TypeDiagrammeCm, psi: number, Mh: number, Ms: number): DiagrammeCm {
+  if (type === 'lineaire') return { type: 'lineaire', psi };
+  if (type === 'mixte-repartie' || type === 'mixte-concentree') {
+    return { type: 'mixte', charge: type === 'mixte-repartie' ? 'repartie' : 'concentree', Mh, psi, Ms };
+  }
+  return { type };
+}
 
 export type Lecture = { ok: true; modele: ModeleSaisie } | { ok: false; message: string };
 
@@ -99,8 +117,12 @@ export function modeleParDefaut(): ModeleSaisie {
     Mcr: null,
     diagrammeY: 'lineaire',
     psiY: 0,
+    MhY: 0,
+    MsY: 0,
     diagrammeZ: 'lineaire',
     psiZ: 1,
+    MhZ: 0,
+    MsZ: 0,
   };
 }
 
@@ -133,8 +155,10 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
     const mcrTexte = (v.mcr ?? '').trim();
     const mcr = mcrTexte === '' ? null : lireNombre(mcrTexte);
     if (mcrTexte !== '' && mcr === null) throw new ErreurDeSaisie('M_cr : nombre attendu, ou champ vide.');
-    const diagrammeY = choix(v, 'diagramme_y', DIAGRAMMES);
-    const diagrammeZ = choix(v, 'diagramme_z', DIAGRAMMES);
+    const diagrammeY = choix(v, 'diagramme_y', DIAGRAMMES_CM);
+    const diagrammeZ = choix(v, 'diagramme_z', DIAGRAMMES_CM);
+    const mixteY = diagrammeY.startsWith('mixte');
+    const mixteZ = diagrammeZ.startsWith('mixte');
     return {
       ok: true,
       modele: {
@@ -171,9 +195,13 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
         point: choix(v, 'point', ['semelle-superieure', 'centre', 'semelle-inferieure'] as const),
         Mcr: mcr,
         diagrammeY,
-        psiY: nombre(v, 'psi_y', diagrammeY === 'lineaire', d.psiY),
+        psiY: nombre(v, 'psi_y', diagrammeY === 'lineaire' || mixteY, d.psiY),
+        MhY: nombre(v, 'mh_y', mixteY, d.MhY),
+        MsY: nombre(v, 'ms_y', mixteY, d.MsY),
         diagrammeZ,
-        psiZ: nombre(v, 'psi_z', diagrammeZ === 'lineaire', d.psiZ),
+        psiZ: nombre(v, 'psi_z', diagrammeZ === 'lineaire' || mixteZ, d.psiZ),
+        MhZ: nombre(v, 'mh_z', mixteZ, d.MhZ),
+        MsZ: nombre(v, 'ms_z', mixteZ, d.MsZ),
       },
     };
   } catch (e) {
@@ -219,8 +247,12 @@ export function champsDepuisModele(m: ModeleSaisie): Record<string, string> {
     mcr: m.Mcr === null ? '' : n(m.Mcr),
     diagramme_y: m.diagrammeY,
     psi_y: n(m.psiY),
+    mh_y: n(m.MhY),
+    ms_y: n(m.MsY),
     diagramme_z: m.diagrammeZ,
     psi_z: n(m.psiZ),
+    mh_z: n(m.MhZ),
+    ms_z: n(m.MsZ),
   };
 }
 
@@ -276,8 +308,8 @@ function communes(m: ModeleSaisie): Omit<DonneesElement, 'profil'> {
     diagrammeLT: m.diagramme === 'lineaire' ? { type: 'lineaire', psi: m.psiLT } : { type: m.diagramme },
     pointApplication: m.point,
     McrSaisi: m.Mcr,
-    diagrammeY: m.diagrammeY === 'lineaire' ? { type: 'lineaire', psi: m.psiY } : { type: m.diagrammeY },
-    diagrammeZ: m.diagrammeZ === 'lineaire' ? { type: 'lineaire', psi: m.psiZ } : { type: m.diagrammeZ },
+    diagrammeY: diagrammeCm(m.diagrammeY, m.psiY, m.MhY, m.MsY),
+    diagrammeZ: diagrammeCm(m.diagrammeZ, m.psiZ, m.MhZ, m.MsZ),
   };
 }
 

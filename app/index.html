@@ -113,20 +113,32 @@
                 <option value="lineaire">lineaire (moments d'extremite)</option>
                 <option value="repartie">charge repartie, appuis simples</option>
                 <option value="concentree-milieu">charge concentree a mi-portee</option>
+                <option value="mixte-repartie">mixte : moments d'extremite + charge repartie</option>
+                <option value="mixte-concentree">mixte : moments d'extremite + charge concentree</option>
               </select>
             </label>
             <div class="groupe" data-groupe="lineaire-y">
               <label><span>&psi;<sub>y</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_y" /></label>
+            </div>
+            <div class="groupe" data-groupe="mixte-y">
+              <label><span>M<sub>h</sub>, plus grand moment d'extremite (kN.m)</span><input type="text" inputmode="decimal" data-champ="mh_y" /></label>
+              <label><span>M<sub>s</sub>, moment en travee du diagramme total (kN.m)</span><input type="text" inputmode="decimal" data-champ="ms_y" /></label>
             </div>
             <label><span>Diagramme de M<sub>z</sub> (C<sub>mz</sub>)</span>
               <select data-champ="diagramme_z">
                 <option value="lineaire">lineaire (moments d'extremite)</option>
                 <option value="repartie">charge repartie, appuis simples</option>
                 <option value="concentree-milieu">charge concentree a mi-portee</option>
+                <option value="mixte-repartie">mixte : moments d'extremite + charge repartie</option>
+                <option value="mixte-concentree">mixte : moments d'extremite + charge concentree</option>
               </select>
             </label>
             <div class="groupe" data-groupe="lineaire-z">
               <label><span>&psi;<sub>z</sub>, rapport des moments d'extremite</span><input type="text" inputmode="decimal" data-champ="psi_z" /></label>
+            </div>
+            <div class="groupe" data-groupe="mixte-z">
+              <label><span>M<sub>h</sub>, plus grand moment d'extremite (kN.m)</span><input type="text" inputmode="decimal" data-champ="mh_z" /></label>
+              <label><span>M<sub>s</sub>, moment en travee du diagramme total (kN.m)</span><input type="text" inputmode="decimal" data-champ="ms_z" /></label>
             </div>
           </fieldset>
 

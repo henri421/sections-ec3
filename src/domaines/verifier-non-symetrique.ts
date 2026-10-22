@@ -33,7 +33,7 @@ import {
 } from '../resistances/non-symetriques';
 import { flambementsNonSymetriques, type FlambementNonSymetrique } from '../instabilite/flexion-torsion';
 import { deversementNonSymetrique, type DeversementNonSymetrique } from '../instabilite/deversement-non-symetrique';
-import { coefficientCmDiagramme, interaction633, type Interaction633 } from '../instabilite/flexion-composee';
+import { coefficientCmDiagramme, interaction633, type DiagrammeCm, type Interaction633 } from '../instabilite/flexion-composee';
 import type { DiagrammeLT, PointApplication } from '../instabilite/deversement';
 import type { ProfilEc3 } from '../norms/profil';
 import { exigerPositif, fr, verifierProfil } from '../norms/profil';
@@ -62,8 +62,8 @@ export interface DonneesNonSymetriques {
   diagrammeLT: DiagrammeLT;
   pointApplication: PointApplication;
   McrSaisi: number | null;
-  diagrammeY: DiagrammeLT;
-  diagrammeZ: DiagrammeLT;
+  diagrammeY: DiagrammeCm;
+  diagrammeZ: DiagrammeCm;
   /** 2L et 2U : espacement des liaisons (fourrures, boulons) le long de la barre (mm). */
   espacementLiaisons: number | null;
 }

@@ -72,6 +72,14 @@ export {
   type Deversement,
   type MomentCritique,
 } from './instabilite/deversement';
-export { interaction633, coefficientCm, coefficientCmDiagramme, type Interaction633 } from './instabilite/flexion-composee';
+export {
+  interaction633,
+  coefficientCm,
+  coefficientCmDiagramme,
+  coefficientCmMixte,
+  type DiagrammeCm,
+  type DiagrammeMixte,
+  type Interaction633,
+} from './instabilite/flexion-composee';
 export { verifierNonSymetrique, verifierCompose, type DonneesNonSymetriques, type ResultatNonSymetrique } from './domaines/verifier-non-symetrique';
 export { verifierElement, type DonneesElement, type ResultatElement, type Verification } from './domaines/verifier-element';

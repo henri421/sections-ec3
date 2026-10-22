@@ -16,7 +16,7 @@ import { classifier, type Classification } from '../classification/classifier';
 import { interactionSection, resistancesSection, verifierVoilementCisaillement, type InteractionSection, type ResistancesSection } from '../resistances/section';
 import { flambement, type Flambement } from '../instabilite/flambement';
 import { deversement, type Deversement, type DiagrammeLT, type PointApplication } from '../instabilite/deversement';
-import { coefficientCmDiagramme, interaction633, type Interaction633 } from '../instabilite/flexion-composee';
+import { coefficientCmDiagramme, interaction633, type DiagrammeCm, type Interaction633 } from '../instabilite/flexion-composee';
 import type { ProfilEc3 } from '../norms/profil';
 import { fr, verifierProfil } from '../norms/profil';
 
@@ -41,8 +41,8 @@ export interface DonneesElement {
   /** M_cr calcule par ailleurs (kN.m), ou null pour l'expression hors norme. */
   McrSaisi: number | null;
   /** Diagrammes du moment M_y et M_z, pour C_my et C_mz (tableau B.3). */
-  diagrammeY: DiagrammeLT;
-  diagrammeZ: DiagrammeLT;
+  diagrammeY: DiagrammeCm;
+  diagrammeZ: DiagrammeCm;
 }
 
 export interface Verification {
