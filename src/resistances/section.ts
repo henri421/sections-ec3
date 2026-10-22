@@ -9,6 +9,7 @@ import type { Materiau, ProfilDoublementSymetrique } from '../model/profil';
 import { epsilon } from '../model/profil';
 import type { Proprietes } from '../proprietes/brutes';
 import type { Classe } from '../classification/classifier';
+import type { SectionEfficaceSymetrique } from '../classification/efficace-symetrique';
 import type { ProfilEc3 } from '../norms/profil';
 import { fr } from '../norms/profil';
 
@@ -56,8 +57,8 @@ export interface ResistancesSection {
   Npl_Rd: number;
   My_Rd: number;
   Mz_Rd: number;
-  /** Module employe : plastique (classes 1, 2) ou elastique (classe 3). */
-  module: 'plastique' | 'elastique';
+  /** Module employe : plastique (classes 1, 2), elastique (classe 3) ou efficace (classe 4). */
+  module: 'plastique' | 'elastique' | 'efficace';
   Vz_Rd: number;
   Vy_Rd: number;
   Avz: number;
@@ -68,23 +69,34 @@ export interface ResistancesSection {
 /**
  * N_pl,Rd = A f_y / gamma_M0 (6.6) ; M_c,Rd = W_pl f_y / gamma_M0 (classes
  * 1, 2) ou W_el,min f_y / gamma_M0 (classe 3) ; V_pl,Rd = A_v (f_y / sqrt 3) /
- * gamma_M0 (6.18). La classe 4 releve des proprietes efficaces de
- * l'EN 1993-1-5 §4, non traitees dans cette version : le module leve.
+ * gamma_M0 (6.18). Classe 4 : N_c,Rd = A_eff f_y / gamma_M0 (6.11) et
+ * M_c,Rd = W_eff,min f_y / gamma_M0 (6.15), proprietes efficaces de
+ * l'EN 1993-1-5 §4.4 (`sectionEfficaceSymetrique`), a fournir.
  */
-export function resistancesSection(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, classe: Classe, profil: ProfilEc3): ResistancesSection {
-  if (classe === 4) {
-    throw new Error('Section de classe 4 : les proprietes efficaces (EN 1993-1-5 §4) ne sont pas traitees dans cette version.');
+export function resistancesSection(
+  p: ProfilDoublementSymetrique,
+  m: Materiau,
+  prop: Proprietes,
+  classe: Classe,
+  profil: ProfilEc3,
+  eff: SectionEfficaceSymetrique | null = null
+): ResistancesSection {
+  if (classe === 4 && eff === null) {
+    throw new Error('Section de classe 4 : les proprietes efficaces (EN 1993-1-5 §4.4) sont requises.');
   }
   const g0 = profil.gamma_M0.valeur;
   const plast = classe <= 2;
   const avz = aireCisaillement(p, prop, 'z', profil);
   const avy = aireCisaillement(p, prop, 'y', profil);
   const tau = m.fy / Math.sqrt(3) / g0;
+  const A = eff !== null && classe === 4 ? eff.Aeff : prop.A;
+  const Wy = eff !== null && classe === 4 ? eff.Weff_y : plast ? prop.Wpl_y : prop.Wel_y;
+  const Wz = eff !== null && classe === 4 ? eff.Weff_z : plast ? prop.Wpl_z : prop.Wel_z;
   return {
-    Npl_Rd: (prop.A * m.fy) / g0 / N_PAR_KN,
-    My_Rd: ((plast ? prop.Wpl_y : prop.Wel_y) * m.fy) / g0 / NMM_PAR_KNM,
-    Mz_Rd: ((plast ? prop.Wpl_z : prop.Wel_z) * m.fy) / g0 / NMM_PAR_KNM,
-    module: plast ? 'plastique' : 'elastique',
+    Npl_Rd: (A * m.fy) / g0 / N_PAR_KN,
+    My_Rd: (Wy * m.fy) / g0 / NMM_PAR_KNM,
+    Mz_Rd: (Wz * m.fy) / g0 / NMM_PAR_KNM,
+    module: classe === 4 ? 'efficace' : plast ? 'plastique' : 'elastique',
     Vz_Rd: (avz.Av * tau) / N_PAR_KN,
     Vy_Rd: (avy.Av * tau) / N_PAR_KN,
     Avz: avz.Av,
@@ -169,6 +181,25 @@ export function interactionSection(
   const NEd = Math.abs(a.N);
   const n = NEd / r.Npl_Rd;
   if (n > 1) throw new Error(`N_Ed = ${fr(NEd, 0)} kN depasse N_pl,Rd = ${fr(r.Npl_Rd, 0)} kN.`);
+
+  if (classe === 4) {
+    // (6.44), sections doublement symetriques : e_N = 0 sous compression
+    // pure, les moments additionnels N e_N sont nuls. N_c,Rd et M_c,Rd
+    // portent A_eff et W_eff ; le cisaillement reduit M par (1 - rho).
+    const taux = n + Math.abs(a.My) / MyV + Math.abs(a.Mz) / MzV;
+    return {
+      My_V_Rd: MyV,
+      Mz_V_Rd: MzV,
+      rho_z,
+      rho_y,
+      MN_y_Rd: MyV,
+      MN_z_Rd: MzV,
+      alpha: 1,
+      beta: 1,
+      taux,
+      motif: `classe 4 : critere (6.44) avec A_eff et W_eff, e_N = 0 (section doublement symetrique)${rho_y + rho_z > 0 ? ', M reduit par le cisaillement' : ''}`,
+    };
+  }
 
   if (classe === 3) {
     const sigma =

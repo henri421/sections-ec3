@@ -26,6 +26,14 @@ export { familles, profilCatalogue, corniereCatalogue, profilUCatalogue, provena
 export { arrondir, integrales, axesPrincipaux, inertieAxe, modulePlastique, distancesExtremes, type Point, type Sommet, type Integrales } from './proprietes/contour';
 export { contours, contourL, contourU, corniereOrientee, torsion, excentriciteCisaillementU, proprietesNonSymetriques, type ProfilNonSymetrique, type Torsion } from './proprietes/formes';
 export { sectionEfficace, facteurRho, type SectionEfficace, type ParoiEfficace, type TypeParoi } from './classification/efficace';
+export {
+  sectionEfficaceSymetrique,
+  kSigmaInterne,
+  rhoInterne,
+  rhoConsole,
+  type SectionEfficaceSymetrique,
+  type ParoiEfficaceSym,
+} from './classification/efficace-symetrique';
 export { classifier, limitesParoiInterne, distributionAme, type Classe, type Classification, type ClasseParoi } from './classification/classifier';
 export {
   aireCisaillement,

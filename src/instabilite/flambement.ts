@@ -67,11 +67,22 @@ export function facteurReduction(lambda_: number, alpha: number): { Phi: number;
  * N_cr = pi^2 E I / L_cr^2 ; lambda = sqrt(A f_y / N_cr) (classes 1 a 3) ;
  * N_b,Rd = chi A f_y / gamma_M1 (6.47).
  */
-export function flambement(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes, axe: 'y' | 'z', Lcr: number, profil: ProfilEc3): Flambement {
+/**
+ * `Aref` : A, ou A_eff en classe 4 (§6.3.1.1(3) et (6.50)).
+ */
+export function flambement(
+  p: ProfilDoublementSymetrique,
+  m: Materiau,
+  prop: Proprietes,
+  axe: 'y' | 'z',
+  Lcr: number,
+  profil: ProfilEc3,
+  Aref: number = prop.A
+): Flambement {
   exigerPositif(Lcr, `La longueur de flambement L_cr,${axe}`, 'mm');
   const I = axe === 'y' ? prop.Iy : prop.Iz;
   const Ncr = (Math.PI ** 2 * E * I) / (Lcr * Lcr);
-  const lambda_ = Math.sqrt((prop.A * m.fy) / Ncr);
+  const lambda_ = Math.sqrt((Aref * m.fy) / Ncr);
   const courbe = courbeFlambement(p, m, axe);
   const alpha = ALPHA[courbe];
   const { Phi, chi } = facteurReduction(lambda_, alpha);
@@ -84,6 +95,6 @@ export function flambement(p: ProfilDoublementSymetrique, m: Materiau, prop: Pro
     alpha,
     Phi,
     chi,
-    Nb_Rd: (chi * prop.A * m.fy) / profil.gamma_M1.valeur / N_PAR_KN,
+    Nb_Rd: (chi * Aref * m.fy) / profil.gamma_M1.valeur / N_PAR_KN,
   };
 }

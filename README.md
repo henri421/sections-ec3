@@ -31,6 +31,17 @@ Page publiée : <https://henri421.github.io/sections-ec3/>.
 - **Flexion composée** (§6.3.3) : facteurs k_ij de l'**annexe B**, choix porté par le profil
   normatif.
 
+## Classe 4 des sections en I et des tubes rectangulaires
+
+Propriétés efficaces de l'EN 1993-1-5 §4.4 : **A_eff** sous compression pure (toutes les
+parois à ψ = 1), **W_eff,y** sous M_y (semelle comprimée efficace, puis âme sous le gradient
+obtenu avec la semelle efficace et l'âme brute, §4.4(3), tableaux 4.1 et 4.2) et **W_eff,z**.
+N_c,Rd et M_c,Rd en découlent ; interaction de section (6.44) avec e_N = 0 (section doublement
+symétrique) ; flambement avec A_eff ; déversement avec W_eff,y. Choix conservatifs déclarés :
+consoles de semelle à k_σ = 0,43 même sous M_z ; âme d'un profil en I en compression uniforme
+sous M_z. Cas de validation : I soudé 1000 × 300 × 6 × 12 en S355, recalculé par un script
+indépendant ; IPE 600 en S355 comprimé, calculé à la main.
+
 ## Cornières, profils en U, 2L et 2U
 
 Plan : [`PLAN-cornieres-et-u.md`](PLAN-cornieres-et-u.md). Disponibles dans l'interface :
@@ -56,7 +67,7 @@ au-dessus des tableaux du producteur aux faibles longueurs (voir la note de vali
 
 ## Hors périmètre de la version 1
 
-Sections de classe 4 (propriétés efficaces, EN 1993-1-5 §4) ; **annexe A** du §6.3.3 (la
+Classe 4 des tubes circulaires (EN 1993-1-6) ; **annexe A** du §6.3.3 (la
 choisir fait lever le module) ; torsion ; sections monosymétriques ; flambement par torsion et
 flexion-torsion ; voilement par cisaillement au-delà du critère du §6.2.6(6) ; assemblages, qui
 relèvent de `assemblages-ec3`.

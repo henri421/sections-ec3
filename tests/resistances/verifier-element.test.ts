@@ -46,8 +46,19 @@ describe('verifierElement', () => {
     expect(r.verifications.find((v) => v.nom === 'Deversement')?.applicable).toBe(false);
   });
 
-  it('IPE 600 S355 tres comprime : classe 4, le module leve', () => {
-    expect(() => verifierElement(element({ profil: profilCatalogue('IPE 600'), nuance: 'S355', N: 2500, My: 0 }), P)).toThrow('classe 4');
+  it('IPE 600 S355 comprime : classe 4, A_eff par l EN 1993-1-5 §4.4', () => {
+    // Ame : c = 600 - 2 × 19 - 2 × 24 = 514 mm, c / t_w = 42,83 > 42 epsilon = 34,17 : classe 4.
+    // lambda_p = 42,83 / (28,4 × 0,8136 × 2) = 0,9268 ; rho = (0,9268 - 0,22) / 0,9268^2 = 0,8228.
+    // Aire perdue au milieu de l'ame : (1 - 0,8228) × 514 × 12 = 1 093 mm2.
+    const r = verifierElement(element({ profil: profilCatalogue('IPE 600'), nuance: 'S355', N: 2500, My: 0 }), P);
+    expect(r.classification.classe).toBe(4);
+    expect(r.resistances.module).toBe('efficace');
+    const perte = r.proprietes.A - (r.sectionEfficace?.Aeff ?? 0);
+    expect(perte).toBeGreaterThan(1093 * 0.995);
+    expect(perte).toBeLessThan(1093 * 1.005);
+    const n = r.verifications.find((v) => v.nom === 'Effort normal');
+    expect(n?.motif).toMatch(/A_eff/);
+    expect(n?.taux).toBeCloseTo(2500 / (((r.sectionEfficace?.Aeff ?? 0) * 355) / 1000), 9);
   });
 
   it('le verdict nomme la verification gouvernante', () => {

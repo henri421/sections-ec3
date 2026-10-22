@@ -13,6 +13,7 @@ import type { Nuance, Profil, Materiau } from '../model/profil';
 import { estDoublementSymetrique, materiau } from '../model/profil';
 import { proprietes, type Proprietes } from '../proprietes/brutes';
 import { classifier, type Classification } from '../classification/classifier';
+import { sectionEfficaceSymetrique, type SectionEfficaceSymetrique } from '../classification/efficace-symetrique';
 import { interactionSection, resistancesSection, verifierVoilementCisaillement, type InteractionSection, type ResistancesSection } from '../resistances/section';
 import { flambement, type Flambement } from '../instabilite/flambement';
 import { deversement, type Deversement, type DiagrammeLT, type PointApplication } from '../instabilite/deversement';
@@ -59,6 +60,8 @@ export interface ResultatElement {
   proprietes: Proprietes;
   materiau: Materiau;
   classification: Classification;
+  /** Proprietes efficaces de la classe 4, null sinon. */
+  sectionEfficace: SectionEfficaceSymetrique | null;
   resistances: ResistancesSection;
   interaction: InteractionSection;
   voilement: string;
@@ -81,13 +84,21 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
   const prop = proprietes(p);
   const mat = materiau(d.nuance, p);
   const classification = classifier(p, mat, prop, { N: d.N, My: d.My, Mz: d.Mz });
-  const res = resistancesSection(p, mat, prop, classification.classe, profil);
+  // Classe 4 : proprietes efficaces de l'EN 1993-1-5 §4.4 (leve pour un tube circulaire).
+  const eff = classification.classe === 4 ? sectionEfficaceSymetrique(p, mat, prop) : null;
+  const res = resistancesSection(p, mat, prop, classification.classe, profil, eff);
   const voilement = verifierVoilementCisaillement(p, mat, prop, profil);
   const inter = interactionSection(p, mat, prop, classification.classe, res, { N: d.N, My: d.My, Mz: d.Mz, Vz: d.Vz, Vy: d.Vy }, profil);
   const verifs: Verification[] = [];
   const g1 = profil.gamma_M1.valeur;
 
-  verifs.push({ nom: 'Effort normal', clause: '§6.2.3, §6.2.4', applicable: d.N !== 0, taux: d.N === 0 ? null : Math.abs(d.N) / res.Npl_Rd, motif: d.N === 0 ? 'Aucun effort normal.' : `N_pl,Rd = ${fr(res.Npl_Rd, 0)} kN` });
+  verifs.push({
+    nom: 'Effort normal',
+    clause: '§6.2.3, §6.2.4',
+    applicable: d.N !== 0,
+    taux: d.N === 0 ? null : Math.abs(d.N) / res.Npl_Rd,
+    motif: d.N === 0 ? 'Aucun effort normal.' : eff !== null && d.N > 0 ? `N_c,Rd = A_eff f_y / gamma_M0 = ${fr(res.Npl_Rd, 0)} kN` : `N_pl,Rd = ${fr(res.Npl_Rd, 0)} kN`,
+  });
   verifs.push({ nom: 'Cisaillement selon z', clause: '§6.2.6', applicable: d.Vz !== 0, taux: d.Vz === 0 ? null : Math.abs(d.Vz) / res.Vz_Rd, motif: d.Vz === 0 ? 'Aucun effort tranchant selon z.' : `V_pl,z,Rd = ${fr(res.Vz_Rd, 0)} kN` });
   verifs.push({ nom: 'Cisaillement selon y', clause: '§6.2.6', applicable: d.Vy !== 0, taux: d.Vy === 0 ? null : Math.abs(d.Vy) / res.Vy_Rd, motif: d.Vy === 0 ? 'Aucun effort tranchant selon y.' : `V_pl,y,Rd = ${fr(res.Vy_Rd, 0)} kN` });
   const avecMoment = d.My !== 0 || d.Mz !== 0;
@@ -95,15 +106,16 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
 
   // Flambement : seulement en compression.
   const comprime = d.N > 0;
-  const fy = comprime ? flambement(p, mat, prop, 'y', d.Lcr_y, profil) : null;
-  const fz = comprime ? flambement(p, mat, prop, 'z', d.Lcr_z, profil) : null;
+  const Aref = eff === null ? prop.A : eff.Aeff;
+  const fy = comprime ? flambement(p, mat, prop, 'y', d.Lcr_y, profil, Aref) : null;
+  const fz = comprime ? flambement(p, mat, prop, 'z', d.Lcr_z, profil, Aref) : null;
   for (const f of [fy, fz]) {
     if (f === null) continue;
     verifs.push({ nom: `Flambement par flexion autour de ${f.axe}`, clause: '§6.3.1', applicable: true, taux: d.N / f.Nb_Rd, motif: `courbe ${f.courbe}, lambda = ${fr(f.lambda_, 3)}, chi = ${fr(f.chi, 3)}` });
   }
   if (!comprime) verifs.push({ nom: 'Flambement par flexion', clause: '§6.3.1', applicable: false, taux: null, motif: 'Element non comprime.' });
 
-  const Wy = res.module === 'plastique' ? prop.Wpl_y : prop.Wel_y;
+  const Wy = eff !== null ? eff.Weff_y : res.module === 'plastique' ? prop.Wpl_y : prop.Wel_y;
   const dev =
     d.My === 0
       ? { applicable: false, motif: 'Aucun moment autour de y.', methode: 'laminee' as const, M_cr: null, lambda_LT: null, courbe: null, chi_LT: 1, f: null, Mb_Rd: null }
@@ -154,6 +166,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
     proprietes: prop,
     materiau: mat,
     classification,
+    sectionEfficace: eff,
     resistances: res,
     interaction: inter,
     voilement,

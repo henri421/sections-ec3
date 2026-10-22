@@ -4,7 +4,7 @@
  */
 
 import { echapper, nombreFr, tauxFr, type BlocResultat, type LigneResultat } from 'aedificium-ui';
-import type { Profil, ProfilNonSymetrique, Proprietes, ResultatElement, ResultatNonSymetrique, Verification, Classification, Materiau, MomentCritique } from '../../src/index';
+import type { Profil, ProfilNonSymetrique, Proprietes, ResultatElement, ResultatNonSymetrique, Verification, Classification, Materiau, MomentCritique, SectionEfficaceSymetrique } from '../../src/index';
 import { contours, estDoublementSymetrique, proprietes, rayonsTube } from '../../src/index';
 
 export function messageDErreur(e: unknown): string {
@@ -112,12 +112,24 @@ export function lignesProprietes(r: { proprietes: Proprietes; materiau: Materiau
   ];
 }
 
-export function lignesClassification(r: { classification: Classification }): LigneResultat[] {
+export function lignesClassification(r: { classification: Classification; sectionEfficace?: SectionEfficaceSymetrique | null }): LigneResultat[] {
+  const e = r.sectionEfficace ?? null;
   return [
     ...r.classification.parois.map((c) =>
       L(c.paroi, `${c.detail} ; limites ${c.limites.map((x) => nombreFr(x, 1)).join(' / ')}`, `c/t = ${nombreFr(c.elancement, 2)} -> classe ${c.classe}`)
     ),
     L('section', `paroi gouvernante : ${r.classification.gouvernante}`, `classe ${r.classification.classe}`),
+    // Classe 4 : les proprietes efficaces de l'EN 1993-1-5 §4.4 et les parois reduites.
+    ...(e === null
+      ? []
+      : [
+          L('A_eff', 'compression pure, EN 1993-1-5 §4.4', `${nombreFr(e.Aeff / 100, 2)} cm²`),
+          L('W_eff,y', `flexion M_y, centre de gravite decale de ${nombreFr(e.zG_y, 1)} mm`, `${nombreFr(e.Weff_y / 1e3, 1)} cm³`),
+          L('W_eff,z', 'flexion M_z', `${nombreFr(e.Weff_z / 1e3, 1)} cm³`),
+          ...e.parois
+            .filter((x) => x.rho < 1)
+            .map((x) => L(`rho ${x.paroi}`, `${x.cas}, psi = ${nombreFr(x.psi, 3)}, k_sigma = ${nombreFr(x.kSigma, 3)}, lambda_p = ${nombreFr(x.lambdaP, 3)}`, nombreFr(x.rho, 3))),
+        ]),
   ];
 }
 
