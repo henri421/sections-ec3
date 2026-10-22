@@ -57,6 +57,13 @@ describe('vues', () => {
     expect(blocs(r).map((b) => b.titre)).toEqual(['Proprietes recalculees', 'Classification (§5.5)', 'Verifications', 'Instabilites (§6.3)', 'Verdict']);
   });
 
+  it('le verdict de la note porte le constat affiche a l ecran', () => {
+    const v = blocs(r).find((b) => b.titre === 'Verdict');
+    expect(v?.lignes[0]?.symbole).toBe('constat');
+    expect(verdictHtml(r)).toContain(v?.lignes[0]?.valeur ?? '???');
+    expect(v?.note).toBe(r.motif);
+  });
+
   it('le :root de style.css concorde avec les jetons communs', () => {
     const css = readFileSync(fileURLToPath(new URL('../../app/src/style.css', import.meta.url)), 'utf8');
     const page = valeursDesJetons(css);

@@ -157,7 +157,7 @@ export function blocs(r: ResultatElement): BlocResultat[] {
     { titre: 'Classification (§5.5)', lignes: lignesClassification(r), note: null },
     { titre: 'Verifications', lignes: lignesVerifications(r), note: r.voilement },
     { titre: 'Instabilites (§6.3)', lignes: lignesInstabilite(r), note: null },
-    { titre: 'Verdict', lignes: [], note: r.motif },
+    blocVerdict(r),
   ];
 }
 
@@ -168,6 +168,14 @@ export function tableHtml(lignes: readonly LigneResultat[]): string {
 }
 
 const LIBELLE_VERDICT: Record<string, string> = { conforme: 'Conforme', 'non-conforme': 'Non conforme', incomplet: 'Verification incomplete' };
+
+/**
+ * Le verdict pour le CSV et la note : le constat affiche a l'ecran
+ * (`verdictHtml`), puis son motif. La note portait le motif seul.
+ */
+export function blocVerdict(r: { verdict: 'conforme' | 'non-conforme' | 'incomplet'; motif: string }): BlocResultat {
+  return { titre: 'Verdict', lignes: [{ symbole: 'constat', libelle: 'verdict', valeur: LIBELLE_VERDICT[r.verdict] }], note: r.motif };
+}
 
 export function verdictHtml(r: { verdict: 'conforme' | 'non-conforme' | 'incomplet'; motif: string }): string {
   return `<p class="verdict verdict-${r.verdict}">${LIBELLE_VERDICT[r.verdict]}</p><p class="motif">${echapper(r.motif)}</p>`;
@@ -234,7 +242,7 @@ export function blocsNonSymetriques(r: ResultatNonSymetrique): BlocResultat[] {
     { titre: 'Classification (§5.5)', lignes: lignesClassification(r), note: null },
     { titre: 'Verifications', lignes: lignesVerifications(r), note: r.voilement },
     { titre: 'Instabilites (§6.3)', lignes: lignesInstabiliteNonSymetrique(r), note: r.avertissements.length === 0 ? null : r.avertissements.join(' ') },
-    { titre: 'Verdict', lignes: [], note: r.motif },
+    blocVerdict(r),
   ];
 }
 
