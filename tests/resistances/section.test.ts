@@ -60,6 +60,18 @@ describe('resistances de section, IPE 300 S235', () => {
     expect(i.taux).toBeCloseTo(1, 6);
   });
 
+  it('flexion autour d un seul axe : taux LINEAIRE M/M_N, pas le carre du critere (6.41)', () => {
+    // M_y = 0,41 M_pl : taux 0,41 (et non 0,41^2 = 0,17).
+    const i = interactionSection(IPE300, mat, prop, 1, r, { N: 0, My: 0.41 * r.My_Rd, Mz: 0, Vz: 0, Vy: 0 }, P);
+    expect(i.taux).toBeCloseTo(0.41, 9);
+  });
+
+  it('flexion deviee : la somme du critere (6.41) est conservee', () => {
+    // alpha = 2, beta = max(1, 5n) = 1 sans effort normal : 0,5^2 + 0,2 = 0,45.
+    const i = interactionSection(IPE300, mat, prop, 1, r, { N: 0, My: 0.5 * r.My_Rd, Mz: 0.2 * r.Mz_Rd, Vz: 0, Vy: 0 }, P);
+    expect(i.taux).toBeCloseTo(0.45, 9);
+  });
+
   it('interaction N-M_y : n = 0,5, a = 0,403 -> M_N,y = M_pl (1 - n)/(1 - 0,5 a)', () => {
     const N = 0.5 * r.Npl_Rd;
     const i = interactionSection(IPE300, mat, prop, 1, r, { N, My: 50, Mz: 0, Vz: 0, Vy: 0 }, P);

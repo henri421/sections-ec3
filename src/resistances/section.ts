@@ -215,7 +215,13 @@ export function interactionSection(
   }
   const ty = MNy > 0 ? Math.abs(a.My) / MNy : Math.abs(a.My) > 0 ? Infinity : 0;
   const tz = MNz > 0 ? Math.abs(a.Mz) / MNz : Math.abs(a.Mz) > 0 ? Infinity : 0;
-  const taux = Math.max(n, ty ** alpha + tz ** beta);
+  // En flexion autour d'un seul axe, le critere (6.41) se reduit a
+  // (M/M_N)^alpha <= 1, soit M/M_N <= 1 : on rend ce rapport LINEAIRE, qui se
+  // lit comme un taux de travail. Eleve a alpha = 2, il aurait affiche 0,17
+  // pour une section chargee a 41 %. En flexion deviee, le critere reste la
+  // somme (6.41), qui n'a pas d'equivalent lineaire.
+  const unSeulAxe = a.My === 0 || a.Mz === 0;
+  const taux = Math.max(n, unSeulAxe ? Math.max(ty, tz) : ty ** alpha + tz ** beta);
   return {
     My_V_Rd: MyV,
     Mz_V_Rd: MzV,
@@ -226,6 +232,8 @@ export function interactionSection(
     alpha,
     beta,
     taux,
-    motif: `classes 1 et 2 : (M_y/M_N,y)^${fr(alpha, 2)} + (M_z/M_N,z)^${fr(beta, 2)}, critere (6.41)`,
+    motif: unSeulAxe
+      ? `classes 1 et 2 : flexion autour d un axe, taux M/M_N lineaire, critere (6.41)`
+      : `classes 1 et 2 : (M_y/M_N,y)^${fr(alpha, 2)} + (M_z/M_N,z)^${fr(beta, 2)}, critere (6.41)`,
   };
 }
