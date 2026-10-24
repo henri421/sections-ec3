@@ -87,7 +87,7 @@ describe('section efficace, EN 1993-1-5 §4.4', () => {
     const s = sectionEfficace(c, materiau('S235', c));
     expect(s.Aeff).toBeCloseTo(proprietes(c).A, 6);
     expect(s.eNy).toBeCloseTo(0, 9);
-    expect(s.motif).toContain('entierement efficaces');
+    expect(s.motif).toContain('entièrement efficaces');
   });
 });
 

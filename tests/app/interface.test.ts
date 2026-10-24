@@ -54,7 +54,7 @@ describe('vues', () => {
   });
 
   it('blocs de sortie : aucun bloc omis', () => {
-    expect(blocs(r).map((b) => b.titre)).toEqual(['Proprietes recalculees', 'Classification (§5.5)', 'Verifications', 'Instabilites (§6.3)', 'Verdict']);
+    expect(blocs(r).map((b) => b.titre)).toEqual(['Propriétés recalculées', 'Classification (§5.5)', 'Vérifications', 'Instabilités (§6.3)', 'Verdict']);
   });
 
   it('le verdict de la note porte le constat affiche a l ecran', () => {
@@ -79,7 +79,7 @@ describe('cornieres, U, 2L et 2U dans l interface', () => {
       const m = { ...modeleParDefaut(), source };
       expect(estNonSymetrique(m)).toBe(true);
       const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), P);
-      expect(blocsNonSymetriques(r).map((b) => b.titre)).toEqual(['Proprietes recalculees', 'Classification (§5.5)', 'Verifications', 'Instabilites (§6.3)', 'Verdict']);
+      expect(blocsNonSymetriques(r).map((b) => b.titre)).toEqual(['Propriétés recalculées', 'Classification (§5.5)', 'Vérifications', 'Instabilités (§6.3)', 'Verdict']);
       const svg = dessinProfil(profilGeneral(m));
       expect(svg).not.toContain('NaN');
       expect(svg).toContain('>C</text>');
@@ -112,8 +112,8 @@ describe('cornieres, U, 2L et 2U dans l interface', () => {
   it('verdict incomplet et bandeau : deversement non verifie signale', () => {
     const m = { ...modeleParDefaut(), source: 'L' as const, N: 20, My: 1 };
     const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), P);
-    expect(verdictHtml(r)).toContain('Verification incomplete');
-    expect(bandeauNonSymetrique(r)).toContain('NON VERIFIE');
+    expect(verdictHtml(r)).toContain('Vérification incomplète');
+    expect(bandeauNonSymetrique(r)).toContain('NON VÉRIFIÉ');
     expect(bandeauNonSymetrique(r)).toContain('HORS NORME');
   });
 

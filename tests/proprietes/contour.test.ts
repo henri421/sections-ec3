@@ -117,6 +117,6 @@ describe('profils composes', () => {
 
   it('ecartement negatif : refuse', () => {
     const c = corniereCatalogue('L 80x80x8');
-    expect(() => proprietes({ type: '2L', nom: 'x', corniere: c, ecartement: -1, accolee: 'h' })).toThrow('ecartement');
+    expect(() => proprietes({ type: '2L', nom: 'x', corniere: c, ecartement: -1, accolee: 'h' })).toThrow('écartement');
   });
 });

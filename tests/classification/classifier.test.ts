@@ -51,6 +51,6 @@ describe('classification, tableau 5.2', () => {
     expect(classifier(p, m, proprietes(p), { N: 0, My: 50, Mz: 0 }).classe).toBe(1);
     const r = classifier(p, m, proprietes(p), { N: 0, My: 0, Mz: 20 });
     expect(r.classe).toBe(4);
-    expect(r.gouvernante).toContain('laterale');
+    expect(r.gouvernante).toContain('latérale');
   });
 });

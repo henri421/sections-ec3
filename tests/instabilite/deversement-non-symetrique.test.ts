@@ -64,7 +64,7 @@ describe('deversement des cornieres et cas sans objet', () => {
     const d = deversementNonSymetrique(c, materiau('S235', c), proprietes(c), 3, null, 5, false, 2000, uniforme, 'centre', null, P);
     expect(d.applicable).toBe(false);
     expect(d.aFournir).toBe(true);
-    expect(d.motif).toContain('NON VERIFIE');
+    expect(d.motif).toContain('NON VÉRIFIÉ');
   });
 
   it('corniere avec M_cr saisi : methode generale, courbe d', () => {

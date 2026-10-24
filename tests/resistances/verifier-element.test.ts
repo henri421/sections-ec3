@@ -30,7 +30,7 @@ describe('verifierElement', () => {
     const r = verifierElement(element(), P);
     const noms = r.verifications.map((v) => v.nom);
     expect(noms).toContain('Flambement par flexion autour de z');
-    expect(noms).toContain('Flexion composee, expression (6.62)');
+    expect(noms).toContain('Flexion composée, expression (6.62)');
     expect(['conforme', 'non-conforme']).toContain(r.verdict);
   });
 
@@ -38,7 +38,7 @@ describe('verifierElement', () => {
     const r = verifierElement(element({ N: -300 }), P);
     const fl = r.verifications.find((v) => v.nom === 'Flambement par flexion');
     expect(fl?.applicable).toBe(false);
-    expect(fl?.motif).toContain('non comprime');
+    expect(fl?.motif).toContain('non comprimé');
   });
 
   it('sans moment : deversement non applicable', () => {

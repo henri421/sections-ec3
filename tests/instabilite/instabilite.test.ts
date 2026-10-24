@@ -101,7 +101,7 @@ describe('deversement, §6.3.2.3', () => {
   it('dispense : NON APPLICABLE, jamais satisfait', () => {
     const d = deversement(p, m, pr, pr.Wpl_y, 5, false, 6000, { type: 'repartie' }, 'centre', null, P);
     expect(d.applicable).toBe(false);
-    expect(d.motif).toContain('negligeable');
+    expect(d.motif).toContain('négligeable');
     expect(d.Mb_Rd).toBeNull();
   });
 

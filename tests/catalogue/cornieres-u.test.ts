@@ -65,7 +65,7 @@ describe('catalogue des cornieres et profils en U', () => {
 
   it('acces type : une corniere n est pas un profil en I, et inversement', () => {
     expect(() => profilCatalogue('L 100x100x10')).toThrow('pas un profil en I');
-    expect(() => corniereCatalogue('IPE 300')).toThrow('pas une corniere');
+    expect(() => corniereCatalogue('IPE 300')).toThrow('pas une cornière');
     expect(() => profilUCatalogue('L 100x100x10')).toThrow('pas un profil en U');
     expect(corniereCatalogue('L 100x100x10').It).toBeCloseTo(6.97e4, -1);
   });

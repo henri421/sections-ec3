@@ -43,9 +43,9 @@ describe('verification des L, U, 2L et 2U', () => {
     const r = verifierNonSymetrique(donnees({}), P);
     const noms = r.verifications.map((v) => v.nom);
     expect(noms).toContain('Flambement : torsion ou flexion-torsion');
-    expect(noms).toContain('Deversement');
-    expect(noms).toContain('Flexion composee, expression (6.62)');
-    expect(r.interaction633?.motif).toContain('ETENDUE');
+    expect(noms).toContain('Déversement');
+    expect(noms).toContain('Flexion composée, expression (6.62)');
+    expect(r.interaction633?.motif).toContain('ÉTENDUE');
     expect(['conforme', 'non-conforme']).toContain(r.verdict);
     expect(r.avertissements.length).toBe(0);
   });
@@ -76,7 +76,7 @@ describe('verification des L, U, 2L et 2U', () => {
     const deux = { type: '2L' as const, nom: '2 L 80x80x8', corniere: c, ecartement: 10, accolee: 'h' as const };
     const iv = proprietes(c).iv;
     expect(() => verifierNonSymetrique(donnees({ profil: deux, My: 0 }), P)).toThrow('espacement des liaisons requis');
-    expect(() => verifierNonSymetrique(donnees({ profil: deux, My: 0, espacementLiaisons: 15 * iv + 1 }), P)).toThrow('hors perimetre');
+    expect(() => verifierNonSymetrique(donnees({ profil: deux, My: 0, espacementLiaisons: 15 * iv + 1 }), P)).toThrow('hors périmètre');
     const r = verifierNonSymetrique(donnees({ profil: deux, My: 0, espacementLiaisons: 15 * iv - 1 }), P);
     expect(r.compose?.limite).toBeCloseTo(15 * iv, 9);
   });
@@ -84,7 +84,7 @@ describe('verification des L, U, 2L et 2U', () => {
   it('2U dos a dos : annexe B dans son domaine (formules des I, pas d extension declaree)', () => {
     const deux = { type: '2U' as const, nom: '2 UPE 200', profilU: profilUCatalogue('UPE 200'), ecartement: 10 };
     const r = verifierNonSymetrique(donnees({ profil: deux, espacementLiaisons: 300 }), P);
-    expect(r.interaction633?.motif).not.toContain('ETENDUE');
+    expect(r.interaction633?.motif).not.toContain('ÉTENDUE');
     expect(r.deversement.M_cr).not.toBeNull();
   });
 
