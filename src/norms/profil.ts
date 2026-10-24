@@ -70,6 +70,13 @@ export function exigerPositifOuNul(valeur: number, nom: string, unite: string): 
   return valeur;
 }
 
+/**
+ * Nombre affiche dans un motif ou un message : trois decimales au plus,
+ * sans zeros inutiles (le noyau n'importe pas aedificium-ui).
+ */
 export function fr(x: number, d: number): string {
-  return x.toFixed(d).replace('.', ',');
+  if (!Number.isFinite(x)) return '—';
+  const texte = x.toFixed(Math.min(d, 3)).replace('.', ',');
+  const sans = texte.includes(',') ? texte.replace(/,?0+$/, '') : texte;
+  return sans === '-0' ? '0' : sans;
 }

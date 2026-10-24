@@ -62,7 +62,7 @@ export interface SectionEfficaceSymetrique {
 
 /** k_sigma d'une paroi interne, tableau 4.1 de l'EN 1993-1-5. */
 export function kSigmaInterne(psi: number): number {
-  if (psi > 1 || psi < -3) throw new Error(`psi = ${psi} hors du tableau 4.1 (de -3 a 1).`);
+  if (psi > 1 || psi < -3) throw new Error(`psi = ${fr(psi, 3)} hors du tableau 4.1 (de -3 a 1).`);
   if (psi === 1) return 4;
   if (psi > 0) return 8.2 / (1.05 + psi);
   if (psi === 0) return 7.81;

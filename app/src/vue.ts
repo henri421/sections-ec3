@@ -3,7 +3,7 @@
  * Unites : mm, kN, kN.m, cm2/cm4/cm3 a l'affichage des proprietes.
  */
 
-import { echapper, nombreFr, notationHtml, notationSvg, tauxFr, type BlocResultat, type LigneResultat } from 'aedificium-ui';
+import { echapper, nombreAffiche, notationHtml, notationSvg, tauxAffiche, type BlocResultat, type LigneResultat } from 'aedificium-ui';
 import type { Profil, ProfilNonSymetrique, Proprietes, ResultatElement, ResultatNonSymetrique, Verification, Classification, Materiau, MomentCritique, SectionEfficaceSymetrique } from '../../src/index';
 import { contours, estDoublementSymetrique, proprietes, provenance, rayonsTube } from '../../src/index';
 import { profilGeneral, type ModeleSaisie } from './form';
@@ -101,15 +101,18 @@ export function dessinProfil(p: Profil): string {
 
 const L = (symbole: string, libelle: string, valeur: string): LigneResultat => ({ symbole, libelle, valeur });
 
+/** Nombre affiche : trois decimales au plus, sans zeros inutiles. */
+const aff = (v: number, d: number): string => nombreAffiche(v, Math.min(d, 3));
+
 export function lignesProprietes(r: { proprietes: Proprietes; materiau: Materiau }): LigneResultat[] {
   const p = r.proprietes;
   return [
-    L('A', 'aire', `${nombreFr(p.A / 1e2, 2)} cm2`),
-    L('I_y, I_z', 'inerties', `${nombreFr(p.Iy / 1e4, 0)} ; ${nombreFr(p.Iz / 1e4, 1)} cm4`),
-    L('W_pl,y, W_pl,z', 'modules plastiques', `${nombreFr(p.Wpl_y / 1e3, 1)} ; ${nombreFr(p.Wpl_z / 1e3, 1)} cm3`),
-    L('W_el,y, W_el,z', 'modules elastiques', `${nombreFr(p.Wel_y / 1e3, 1)} ; ${nombreFr(p.Wel_z / 1e3, 1)} cm3`),
-    L('I_t, I_w', 'torsion, gauchissement', `${nombreFr(p.It / 1e4, 2)} cm4 ; ${nombreFr(p.Iw / 1e6, 0)} cm6`),
-    L('f_y, f_u', `nuance ${r.materiau.nuance}, t = ${nombreFr(r.materiau.epaisseur, 1)} mm (tableau 3.1)`, `${r.materiau.fy} ; ${r.materiau.fu} MPa`),
+    L('A', 'aire', `${aff(p.A / 1e2, 2)} cm2`),
+    L('I_y, I_z', 'inerties', `${aff(p.Iy / 1e4, 0)} ; ${aff(p.Iz / 1e4, 1)} cm4`),
+    L('W_pl,y, W_pl,z', 'modules plastiques', `${aff(p.Wpl_y / 1e3, 1)} ; ${aff(p.Wpl_z / 1e3, 1)} cm3`),
+    L('W_el,y, W_el,z', 'modules elastiques', `${aff(p.Wel_y / 1e3, 1)} ; ${aff(p.Wel_z / 1e3, 1)} cm3`),
+    L('I_t, I_w', 'torsion, gauchissement', `${aff(p.It / 1e4, 2)} cm4 ; ${aff(p.Iw / 1e6, 0)} cm6`),
+    L('f_y, f_u', `nuance ${r.materiau.nuance}, t = ${aff(r.materiau.epaisseur, 1)} mm (tableau 3.1)`, `${aff(r.materiau.fy, 0)} ; ${aff(r.materiau.fu, 0)} MPa`),
   ];
 }
 
@@ -117,25 +120,25 @@ export function lignesClassification(r: { classification: Classification; sectio
   const e = r.sectionEfficace ?? null;
   return [
     ...r.classification.parois.map((c) =>
-      L(c.paroi, `${c.detail} ; limites ${c.limites.map((x) => nombreFr(x, 1)).join(' / ')}`, `c/t = ${nombreFr(c.elancement, 2)} -> classe ${c.classe}`)
+      L(c.paroi, `${c.detail} ; limites ${c.limites.map((x) => aff(x, 1)).join(' / ')}`, `c/t = ${aff(c.elancement, 2)} -> classe ${c.classe}`)
     ),
     L('section', `paroi gouvernante : ${r.classification.gouvernante}`, `classe ${r.classification.classe}`),
     // Classe 4 : les proprietes efficaces de l'EN 1993-1-5 §4.4 et les parois reduites.
     ...(e === null
       ? []
       : [
-          L('A_eff', 'compression pure, EN 1993-1-5 §4.4', `${nombreFr(e.Aeff / 100, 2)} cm²`),
-          L('W_eff,y', `flexion M_y, centre de gravite decale de ${nombreFr(e.zG_y, 1)} mm`, `${nombreFr(e.Weff_y / 1e3, 1)} cm³`),
-          L('W_eff,z', 'flexion M_z', `${nombreFr(e.Weff_z / 1e3, 1)} cm³`),
+          L('A_eff', 'compression pure, EN 1993-1-5 §4.4', `${aff(e.Aeff / 100, 2)} cm²`),
+          L('W_eff,y', `flexion M_y, centre de gravite decale de ${aff(e.zG_y, 1)} mm`, `${aff(e.Weff_y / 1e3, 1)} cm³`),
+          L('W_eff,z', 'flexion M_z', `${aff(e.Weff_z / 1e3, 1)} cm³`),
           ...e.parois
             .filter((x) => x.rho < 1)
-            .map((x) => L(`rho ${x.paroi}`, `${x.cas}, psi = ${nombreFr(x.psi, 3)}, k_sigma = ${nombreFr(x.kSigma, 3)}, lambda_p = ${nombreFr(x.lambdaP, 3)}`, nombreFr(x.rho, 3))),
+            .map((x) => L(`rho ${x.paroi}`, `${x.cas}, psi = ${aff(x.psi, 3)}, k_sigma = ${aff(x.kSigma, 3)}, lambda_p = ${aff(x.lambdaP, 3)}`, aff(x.rho, 3))),
         ]),
   ];
 }
 
 export function lignesVerifications(r: { verifications: Verification[] }): LigneResultat[] {
-  return r.verifications.map((v) => L(v.nom, `${v.clause} — ${v.motif}`, v.applicable && v.taux !== null ? tauxFr(v.taux) : 'non applicable'));
+  return r.verifications.map((v) => L(v.nom, `${v.clause} — ${v.motif}`, v.applicable && v.taux !== null ? tauxAffiche(v.taux) : 'non applicable'));
 }
 
 export function lignesInstabilite(r: ResultatElement): LigneResultat[] {
@@ -143,23 +146,23 @@ export function lignesInstabilite(r: ResultatElement): LigneResultat[] {
   for (const f of [r.flambementY, r.flambementZ]) {
     if (f === null) continue;
     lignes.push(
-      L(`flambement ${f.axe}`, `L_cr = ${nombreFr(f.Lcr / 1000, 2)} m, N_cr = ${nombreFr(f.N_cr, 0)} kN, courbe ${f.courbe} (alpha = ${nombreFr(f.alpha, 2)})`, `lambda ${nombreFr(f.lambda_, 3)} ; chi ${nombreFr(f.chi, 3)} ; N_b,Rd ${nombreFr(f.Nb_Rd, 0)} kN`)
+      L(`flambement ${f.axe}`, `L_cr = ${aff(f.Lcr / 1000, 2)} m, N_cr = ${aff(f.N_cr, 0)} kN, courbe ${f.courbe} (alpha = ${aff(f.alpha, 2)})`, `lambda ${aff(f.lambda_, 3)} ; chi ${aff(f.chi, 3)} ; N_b,Rd ${aff(f.Nb_Rd, 0)} kN`)
     );
   }
   const d = r.deversement;
   if (d.M_cr !== null) {
-    lignes.push(L('M_cr', d.M_cr.source, `${nombreFr(d.M_cr.M_cr, 1)} kN.m`));
+    lignes.push(L('M_cr', d.M_cr.source, `${aff(d.M_cr.M_cr, 1)} kN.m`));
   }
   lignes.push(
     L(
       'deversement',
       d.motif,
-      d.applicable && d.Mb_Rd !== null ? `lambda_LT ${nombreFr(d.lambda_LT ?? 0, 3)} ; chi_LT ${nombreFr(d.chi_LT, 3)} ; M_b,Rd ${nombreFr(d.Mb_Rd, 1)} kN.m` : 'non applicable'
+      d.applicable && d.Mb_Rd !== null ? `lambda_LT ${aff(d.lambda_LT ?? 0, 3)} ; chi_LT ${aff(d.chi_LT, 3)} ; M_b,Rd ${aff(d.Mb_Rd, 1)} kN.m` : 'non applicable'
     )
   );
   if (r.interaction633 !== null) {
     const i = r.interaction633;
-    lignes.push(L('k_yy, k_yz, k_zy, k_zz', i.motif, [i.kyy, i.kyz, i.kzy, i.kzz].map((x) => nombreFr(x, 3)).join(' ; ')));
+    lignes.push(L('k_yy, k_yz, k_zy, k_zz', i.motif, [i.kyy, i.kyz, i.kzy, i.kzz].map((x) => aff(x, 3)).join(' ; ')));
   }
   return lignes;
 }
@@ -198,7 +201,7 @@ export function verdictHtml(r: { verdict: 'conforme' | 'non-conforme' | 'incompl
 export function bandeauMcr(r: { deversement: { M_cr: MomentCritique | null } }): string {
   const m = r.deversement.M_cr;
   if (m === null || m.origine !== 'hors-norme') return '';
-  return `<p class="alerte">M<sub>cr</sub> = ${nombreFr(m.M_cr, 1)} kN.m est calcule par une expression HORS NORME (l'EN 1993-1-1 ne donne pas M<sub>cr</sub>) : ${notationHtml(m.source)}. Un M<sub>cr</sub> issu d'un calcul aux elements finis peut etre saisi.</p>`;
+  return `<p class="alerte">M<sub>cr</sub> = ${aff(m.M_cr, 1)} kN.m est calcule par une expression HORS NORME (l'EN 1993-1-1 ne donne pas M<sub>cr</sub>) : ${notationHtml(m.source)}. Un M<sub>cr</sub> issu d'un calcul aux elements finis peut etre saisi.</p>`;
 }
 
 /** Proprietes propres aux profils non doublement symetriques. */
@@ -206,20 +209,20 @@ export function lignesProprietesNonSymetriques(r: ResultatNonSymetrique): LigneR
   const p = r.proprietes;
   const lignes = [
     ...lignesProprietes(r),
-    L('y_G, z_G', 'centre de gravite, repere de construction', `${nombreFr(p.yG, 1)} ; ${nombreFr(p.zG, 1)} mm`),
-    L('y_0, z_0', 'centre de cisaillement depuis G', `${nombreFr(p.y0, 1)} ; ${nombreFr(p.z0, 1)} mm`),
-    L('I_t, I_w', p.origineTorsion, `${nombreFr(p.It / 1e4, 2)} cm4 ; ${nombreFr(p.Iw / 1e6, 1)} cm6`),
+    L('y_G, z_G', 'centre de gravite, repere de construction', `${aff(p.yG, 1)} ; ${aff(p.zG, 1)} mm`),
+    L('y_0, z_0', 'centre de cisaillement depuis G', `${aff(p.y0, 1)} ; ${aff(p.z0, 1)} mm`),
+    L('I_t, I_w', p.origineTorsion, `${aff(p.It / 1e4, 2)} cm4 ; ${aff(p.Iw / 1e6, 1)} cm6`),
   ];
   if (Math.abs(p.Iyz) > 1e-6 * p.Iy) {
     lignes.push(
-      L('I_u, I_v', `axes principaux, alpha = ${nombreFr((p.alpha * 180) / Math.PI, 1)} degres`, `${nombreFr(p.Iu / 1e4, 1)} ; ${nombreFr(p.Iv / 1e4, 1)} cm4`),
-      L('W_el,u, W_el,v', 'modules elastiques minimaux', `${nombreFr(p.Wel_u / 1e3, 2)} ; ${nombreFr(p.Wel_v / 1e3, 2)} cm3`),
-      L('W_pl,u, W_pl,v', 'modules plastiques', `${nombreFr(p.Wpl_u / 1e3, 2)} ; ${nombreFr(p.Wpl_v / 1e3, 2)} cm3`)
+      L('I_u, I_v', `axes principaux, alpha = ${aff((p.alpha * 180) / Math.PI, 1)} degres`, `${aff(p.Iu / 1e4, 1)} ; ${aff(p.Iv / 1e4, 1)} cm4`),
+      L('W_el,u, W_el,v', 'modules elastiques minimaux', `${aff(p.Wel_u / 1e3, 2)} ; ${aff(p.Wel_v / 1e3, 2)} cm3`),
+      L('W_pl,u, W_pl,v', 'modules plastiques', `${aff(p.Wpl_u / 1e3, 2)} ; ${aff(p.Wpl_v / 1e3, 2)} cm3`)
     );
   }
   if (r.efficace !== null) {
     const e = r.efficace;
-    lignes.push(L('A_eff, e_N', e.motif, `${nombreFr(e.Aeff / 1e2, 2)} cm2 ; ${nombreFr(e.eNy, 1)} ; ${nombreFr(e.eNz, 1)} mm`));
+    lignes.push(L('A_eff, e_N', e.motif, `${aff(e.Aeff / 1e2, 2)} cm2 ; ${aff(e.eNy, 1)} ; ${aff(e.eNz, 1)} mm`));
   }
   return lignes;
 }
@@ -228,24 +231,24 @@ export function lignesInstabiliteNonSymetrique(r: ResultatNonSymetrique): LigneR
   const lignes: LigneResultat[] = r.flambements.map((f) =>
     L(
       `flambement, ${f.mode}`,
-      `L_cr = ${nombreFr(f.Lcr / 1000, 2)} m, N_cr = ${nombreFr(f.N_cr, 0)} kN, ${f.motif}`,
-      `lambda ${nombreFr(f.lambdaEff ?? f.lambda_, 3)} ; chi ${nombreFr(f.chi, 3)} ; N_b,Rd ${nombreFr(f.Nb_Rd, 0)} kN`
+      `L_cr = ${aff(f.Lcr / 1000, 2)} m, N_cr = ${aff(f.N_cr, 0)} kN, ${f.motif}`,
+      `lambda ${aff(f.lambdaEff ?? f.lambda_, 3)} ; chi ${aff(f.chi, 3)} ; N_b,Rd ${aff(f.Nb_Rd, 0)} kN`
     )
   );
   const d = r.deversement;
-  if (d.M_cr !== null) lignes.push(L('M_cr', d.M_cr.source, `${nombreFr(d.M_cr.M_cr, 1)} kN.m`));
+  if (d.M_cr !== null) lignes.push(L('M_cr', d.M_cr.source, `${aff(d.M_cr.M_cr, 1)} kN.m`));
   lignes.push(
     L(
       'deversement',
       d.motif,
-      d.applicable && d.Mb_Rd !== null ? `lambda_LT ${nombreFr(d.lambda_LT ?? 0, 3)} ; chi_LT ${nombreFr(d.chi_LT, 3)} ; M_b,Rd ${nombreFr(d.Mb_Rd, 1)} kN.m` : d.aFournir ? 'NON VERIFIE' : 'non applicable'
+      d.applicable && d.Mb_Rd !== null ? `lambda_LT ${aff(d.lambda_LT ?? 0, 3)} ; chi_LT ${aff(d.chi_LT, 3)} ; M_b,Rd ${aff(d.Mb_Rd, 1)} kN.m` : d.aFournir ? 'NON VERIFIE' : 'non applicable'
     )
   );
   if (r.interaction633 !== null) {
     const i = r.interaction633;
-    lignes.push(L('k_yy, k_yz, k_zy, k_zz', i.motif, [i.kyy, i.kyz, i.kzy, i.kzz].map((x) => nombreFr(x, 3)).join(' ; ')));
+    lignes.push(L('k_yy, k_yz, k_zy, k_zz', i.motif, [i.kyy, i.kyz, i.kzy, i.kzz].map((x) => aff(x, 3)).join(' ; ')));
   }
-  if (r.compose !== null) lignes.push(L('barre composee', r.compose.motif, `${nombreFr(r.compose.espacement, 0)} mm`));
+  if (r.compose !== null) lignes.push(L('barre composee', r.compose.motif, `${aff(r.compose.espacement, 0)} mm`));
   return lignes;
 }
 
@@ -278,10 +281,10 @@ export function optionsCatalogue(listes: Array<{ famille: string; noms: string[]
 
 /** Le diagramme saisi, en clair, pour la note : l'ecran le montre, la note le dit. */
 function texteDiagramme(type: string, psi: number, Mh: number, Ms: number): string {
-  if (type === 'lineaire') return `lineaire, psi = ${psi}`;
+  if (type === 'lineaire') return `lineaire, psi = ${aff(psi, 3)}`;
   if (type === 'repartie') return 'charge repartie, appuis simples';
   if (type === 'concentree-milieu') return 'charge concentree a mi-portee';
-  return `mixte (${type === 'mixte-repartie' ? 'repartie' : 'concentree'}) : M_h = ${Mh} kN.m, psi = ${psi}, M_s = ${Ms} kN.m`;
+  return `mixte (${type === 'mixte-repartie' ? 'repartie' : 'concentree'}) : M_h = ${aff(Mh, 3)} kN.m, psi = ${aff(psi, 3)}, M_s = ${aff(Ms, 3)} kN.m`;
 }
 
 /** Bloc « Donnees » de la note : les entrees telles que l'ecran les montre. */
@@ -291,9 +294,9 @@ export function blocEntrees(m: ModeleSaisie): BlocResultat {
     titre: 'Donnees',
     lignes: [
       { symbole: 'profil', libelle: provenance(p.nom), valeur: `${p.nom}, ${m.nuance}` },
-      { symbole: 'N, M_y, M_z', libelle: 'sollicitations de calcul', valeur: `${m.N} kN ; ${m.My} ; ${m.Mz} kN.m` },
-      { symbole: 'V_z, V_y', libelle: 'efforts tranchants', valeur: `${m.Vz} ; ${m.Vy} kN` },
-      { symbole: 'L_cr,y, L_cr,z, L', libelle: 'longueurs de flambement, entre maintiens', valeur: `${m.Lcry} ; ${m.Lcrz} ; ${m.LLT} m` },
+      { symbole: 'N, M_y, M_z', libelle: 'sollicitations de calcul', valeur: `${aff(m.N, 3)} kN ; ${aff(m.My, 3)} ; ${aff(m.Mz, 3)} kN.m` },
+      { symbole: 'V_z, V_y', libelle: 'efforts tranchants', valeur: `${aff(m.Vz, 3)} ; ${aff(m.Vy, 3)} kN` },
+      { symbole: 'L_cr,y, L_cr,z, L', libelle: 'longueurs de flambement, entre maintiens', valeur: `${aff(m.Lcry, 3)} ; ${aff(m.Lcrz, 3)} ; ${aff(m.LLT, 3)} m` },
       { symbole: 'diagramme LT', libelle: 'deversement (C1, C2, C_mLT)', valeur: texteDiagramme(m.diagramme, m.psiLT, 0, 0) },
       { symbole: 'diagramme M_y', libelle: 'C_my, tableau B.3', valeur: texteDiagramme(m.diagrammeY, m.psiY, m.MhY, m.MsY) },
       { symbole: 'diagramme M_z', libelle: 'C_mz, tableau B.3', valeur: texteDiagramme(m.diagrammeZ, m.psiZ, m.MhZ, m.MsZ) },

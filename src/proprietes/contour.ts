@@ -13,6 +13,8 @@
  * compte de y vers z) passe par le centre de gravite sauf mention.
  */
 
+import { fr } from '../norms/profil';
+
 export type Point = readonly [number, number];
 
 /** Sommet d'un contour, avec le rayon d'arrondi eventuel a ce sommet (mm). */
@@ -47,7 +49,7 @@ export function arrondir(sommets: readonly Sommet[]): Point[] {
     const u2: Point = [(B.y - P.y) / l2, (B.z - P.z) / l2];
     const demi = Math.acos(Math.max(-1, Math.min(1, u1[0] * u2[0] + u1[1] * u2[1]))) / 2;
     const d = r / Math.tan(demi);
-    if (d > l1 + 1e-9 || d > l2 + 1e-9) throw new Error(`Rayon ${r} mm trop grand pour le sommet (${P.y} ; ${P.z}).`);
+    if (d > l1 + 1e-9 || d > l2 + 1e-9) throw new Error(`Rayon ${fr(r, 3)} mm trop grand pour le sommet (${fr(P.y, 3)} ; ${fr(P.z, 3)}).`);
     const bis: Point = [u1[0] + u2[0], u1[1] + u2[1]];
     const lb = Math.hypot(bis[0], bis[1]);
     const C: Point = [P.y + (bis[0] / lb) * (r / Math.sin(demi)), P.z + (bis[1] / lb) * (r / Math.sin(demi))];

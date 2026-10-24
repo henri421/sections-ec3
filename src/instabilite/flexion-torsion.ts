@@ -198,8 +198,8 @@ export function flambementsNonSymetriques(
   const bb = (a: number) => (l: number) => a + 0.7 * l;
   const res: FlambementNonSymetrique[] = [];
   const ncr = (I: number, Lcr: number): number => (Math.PI ** 2 * E * I) / (Lcr * Lcr);
-  res.push(mode('flexion autour de y', L.Lcr_y, ncr(prop.Iy, L.Lcr_y), Aref, m, courbe, treillis ? bb(0.5) : null, profil, treillis ? 'annexe BB.1.2 : lambda_eff = 0,50 + 0,7 lambda' : `courbe ${courbe}`));
-  res.push(mode('flexion autour de z', L.Lcr_z, ncr(prop.Iz, L.Lcr_z), Aref, m, courbe, treillis ? bb(0.5) : null, profil, treillis ? 'annexe BB.1.2 : lambda_eff = 0,50 + 0,7 lambda' : `courbe ${courbe}`));
+  res.push(mode('flexion autour de y', L.Lcr_y, ncr(prop.Iy, L.Lcr_y), Aref, m, courbe, treillis ? bb(0.5) : null, profil, treillis ? 'annexe BB.1.2 : lambda_eff = 0,5 + 0,7 lambda' : `courbe ${courbe}`));
+  res.push(mode('flexion autour de z', L.Lcr_z, ncr(prop.Iz, L.Lcr_z), Aref, m, courbe, treillis ? bb(0.5) : null, profil, treillis ? 'annexe BB.1.2 : lambda_eff = 0,5 + 0,7 lambda' : `courbe ${courbe}`));
   if (p.type === 'L') {
     exigerPositif(L.Lcr_v, 'La longueur de flambement L_cr,v', 'mm');
     res.push(mode('flexion autour de v', L.Lcr_v, ncr(prop.Iv, L.Lcr_v), Aref, m, courbe, treillis ? bb(0.35) : null, profil, treillis ? 'annexe BB.1.2 : lambda_eff = 0,35 + 0,7 lambda' : `courbe ${courbe}, axe faible`));
