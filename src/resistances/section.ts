@@ -38,7 +38,7 @@ export function aireCisaillement(p: ProfilDoublementSymetrique, prop: Proprietes
         const min = eta * prop.hw * p.tw;
         return { Av: Math.max(brut, min), motif: brut >= min ? '§6.2.6(3)a' : `§6.2.6(3)a, plancher eta h_w t_w (eta = ${fr(eta, 2)})` };
       }
-      return { Av: prop.A - prop.Aw, motif: '§6.2.6(3)e, appliquee au profil lamine faute d expression propre' };
+      return { Av: prop.A - prop.Aw, motif: "§6.2.6(3)e, appliquée au profil laminé faute d'expression propre" };
     }
     case 'I-soude':
       return dir === 'z'
@@ -82,7 +82,7 @@ export function resistancesSection(
   eff: SectionEfficaceSymetrique | null = null
 ): ResistancesSection {
   if (classe === 4 && eff === null) {
-    throw new Error('Section de classe 4 : les proprietes efficaces (EN 1993-1-5 §4.4) sont requises.');
+    throw new Error('Section de classe 4 : les propriétés efficaces (EN 1993-1-5 §4.4) sont requises.');
   }
   const g0 = profil.gamma_M0.valeur;
   const plast = classe <= 2;
@@ -115,9 +115,9 @@ export function verifierVoilementCisaillement(p: ProfilDoublementSymetrique, m: 
   const lim = (72 * epsilon(m.fy)) / profil.eta.valeur;
   const el = prop.hw / p.tw;
   if (el > lim) {
-    throw new Error(`h_w / t_w = ${fr(el, 1)} > 72 epsilon / eta = ${fr(lim, 1)} : voilement par cisaillement (EN 1993-1-5 §5) hors perimetre.`);
+    throw new Error(`h_w / t_w = ${fr(el, 1)} > 72 epsilon / eta = ${fr(lim, 1)} : voilement par cisaillement (EN 1993-1-5 §5) hors périmètre.`);
   }
-  return `h_w / t_w = ${fr(el, 1)} <= 72 epsilon / eta = ${fr(lim, 1)} : pas de voilement par cisaillement a verifier (§6.2.6(6)).`;
+  return `h_w / t_w = ${fr(el, 1)} <= 72 epsilon / eta = ${fr(lim, 1)} : pas de voilement par cisaillement à vérifier (§6.2.6(6)).`;
 }
 
 /** rho = (2 V_Ed / V_pl,Rd - 1)^2 si V_Ed > 0,5 V_pl,Rd, sinon 0 (§6.2.8(3)). */
@@ -180,7 +180,7 @@ export function interactionSection(
 
   const NEd = Math.abs(a.N);
   const n = NEd / r.Npl_Rd;
-  if (n > 1) throw new Error(`N_Ed = ${fr(NEd, 0)} kN depasse N_pl,Rd = ${fr(r.Npl_Rd, 0)} kN.`);
+  if (n > 1) throw new Error(`N_Ed = ${fr(NEd, 0)} kN dépasse N_pl,Rd = ${fr(r.Npl_Rd, 0)} kN.`);
 
   if (classe === 4) {
     // (6.44), sections doublement symetriques : e_N = 0 sous compression
@@ -197,7 +197,7 @@ export function interactionSection(
       alpha: 1,
       beta: 1,
       taux,
-      motif: `classe 4 : critere (6.44) avec A_eff et W_eff, e_N = 0 (section doublement symetrique)${rho_y + rho_z > 0 ? ', M reduit par le cisaillement' : ''}`,
+      motif: `classe 4 : critère (6.44) avec A_eff et W_eff, e_N = 0 (section doublement symétrique)${rho_y + rho_z > 0 ? ', M réduit par le cisaillement' : ''}`,
     };
   }
 
@@ -215,7 +215,7 @@ export function interactionSection(
       alpha: 1,
       beta: 1,
       taux: sigma / fyd,
-      motif: `classe 3 : sigma_x,Ed = ${fr(sigma, 1)} MPa, critere (6.42)${rho_y + rho_z > 0 ? ', f_y reduit par le cisaillement' : ''}`,
+      motif: `classe 3 : sigma_x,Ed = ${fr(sigma, 1)} MPa, critère (6.42)${rho_y + rho_z > 0 ? ', f_y réduit par le cisaillement' : ''}`,
     };
   }
 
@@ -264,7 +264,7 @@ export function interactionSection(
     beta,
     taux,
     motif: unSeulAxe
-      ? `classes 1 et 2 : flexion autour d un axe, taux M/M_N lineaire, critere (6.41)`
-      : `classes 1 et 2 : (M_y/M_N,y)^${fr(alpha, 2)} + (M_z/M_N,z)^${fr(beta, 2)}, critere (6.41)`,
+      ? `classes 1 et 2 : flexion autour d'un axe, taux M/M_N linéaire, critère (6.41)`
+      : `classes 1 et 2 : (M_y/M_N,y)^${fr(alpha, 2)} + (M_z/M_N,z)^${fr(beta, 2)}, critère (6.41)`,
   };
 }

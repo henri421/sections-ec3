@@ -104,13 +104,20 @@ const L = (symbole: string, libelle: string, valeur: string): LigneResultat => (
 /** Nombre affiche : trois decimales au plus, sans zeros inutiles. */
 const aff = (v: number, d: number): string => nombreAffiche(v, Math.min(d, 3));
 
+/** Libelles affiches des parois : « ame » reste la valeur technique des tests. */
+const PAROI_AFFICHEE: Record<string, string> = { ame: 'âme' };
+const paroiAffichee = (nom: string): string => PAROI_AFFICHEE[nom] ?? nom.replace(/^corniere, /, 'cornière, ');
+
+/** Nom affiche d'une verification : la cle technique reste « Deversement ». */
+const NOM_VERIFICATION: Record<string, string> = { Deversement: 'Déversement' };
+
 export function lignesProprietes(r: { proprietes: Proprietes; materiau: Materiau }): LigneResultat[] {
   const p = r.proprietes;
   return [
     L('A', 'aire', `${aff(p.A / 1e2, 2)} cm2`),
     L('I_y, I_z', 'inerties', `${aff(p.Iy / 1e4, 0)} ; ${aff(p.Iz / 1e4, 1)} cm4`),
     L('W_pl,y, W_pl,z', 'modules plastiques', `${aff(p.Wpl_y / 1e3, 1)} ; ${aff(p.Wpl_z / 1e3, 1)} cm3`),
-    L('W_el,y, W_el,z', 'modules elastiques', `${aff(p.Wel_y / 1e3, 1)} ; ${aff(p.Wel_z / 1e3, 1)} cm3`),
+    L('W_el,y, W_el,z', 'modules élastiques', `${aff(p.Wel_y / 1e3, 1)} ; ${aff(p.Wel_z / 1e3, 1)} cm3`),
     L('I_t, I_w', 'torsion, gauchissement', `${aff(p.It / 1e4, 2)} cm4 ; ${aff(p.Iw / 1e6, 0)} cm6`),
     L('f_y, f_u', `nuance ${r.materiau.nuance}, t = ${aff(r.materiau.epaisseur, 1)} mm (tableau 3.1)`, `${aff(r.materiau.fy, 0)} ; ${aff(r.materiau.fu, 0)} MPa`),
   ];
@@ -120,15 +127,15 @@ export function lignesClassification(r: { classification: Classification; sectio
   const e = r.sectionEfficace ?? null;
   return [
     ...r.classification.parois.map((c) =>
-      L(c.paroi, `${c.detail} ; limites ${c.limites.map((x) => aff(x, 1)).join(' / ')}`, `c/t = ${aff(c.elancement, 2)} -> classe ${c.classe}`)
+      L(paroiAffichee(c.paroi), `${c.detail} ; limites ${c.limites.map((x) => aff(x, 1)).join(' / ')}`, `c/t = ${aff(c.elancement, 2)} → classe ${c.classe}`)
     ),
-    L('section', `paroi gouvernante : ${r.classification.gouvernante}`, `classe ${r.classification.classe}`),
+    L('section', `paroi gouvernante : ${paroiAffichee(r.classification.gouvernante)}`, `classe ${r.classification.classe}`),
     // Classe 4 : les proprietes efficaces de l'EN 1993-1-5 §4.4 et les parois reduites.
     ...(e === null
       ? []
       : [
           L('A_eff', 'compression pure, EN 1993-1-5 §4.4', `${aff(e.Aeff / 100, 2)} cm²`),
-          L('W_eff,y', `flexion M_y, centre de gravite decale de ${aff(e.zG_y, 1)} mm`, `${aff(e.Weff_y / 1e3, 1)} cm³`),
+          L('W_eff,y', `flexion M_y, centre de gravité décalé de ${aff(e.zG_y, 1)} mm`, `${aff(e.Weff_y / 1e3, 1)} cm³`),
           L('W_eff,z', 'flexion M_z', `${aff(e.Weff_z / 1e3, 1)} cm³`),
           ...e.parois
             .filter((x) => x.rho < 1)
@@ -138,7 +145,7 @@ export function lignesClassification(r: { classification: Classification; sectio
 }
 
 export function lignesVerifications(r: { verifications: Verification[] }): LigneResultat[] {
-  return r.verifications.map((v) => L(v.nom, `${v.clause} — ${v.motif}`, v.applicable && v.taux !== null ? tauxAffiche(v.taux) : 'non applicable'));
+  return r.verifications.map((v) => L(NOM_VERIFICATION[v.nom] ?? v.nom, `${v.clause} — ${v.motif}`, v.applicable && v.taux !== null ? tauxAffiche(v.taux) : 'non applicable'));
 }
 
 export function lignesInstabilite(r: ResultatElement): LigneResultat[] {
@@ -155,7 +162,7 @@ export function lignesInstabilite(r: ResultatElement): LigneResultat[] {
   }
   lignes.push(
     L(
-      'deversement',
+      'déversement',
       d.motif,
       d.applicable && d.Mb_Rd !== null ? `lambda_LT ${aff(d.lambda_LT ?? 0, 3)} ; chi_LT ${aff(d.chi_LT, 3)} ; M_b,Rd ${aff(d.Mb_Rd, 1)} kN.m` : 'non applicable'
     )
@@ -169,10 +176,10 @@ export function lignesInstabilite(r: ResultatElement): LigneResultat[] {
 
 export function blocs(r: ResultatElement): BlocResultat[] {
   return [
-    { titre: 'Proprietes recalculees', lignes: lignesProprietes(r), note: null },
+    { titre: 'Propriétés recalculées', lignes: lignesProprietes(r), note: null },
     { titre: 'Classification (§5.5)', lignes: lignesClassification(r), note: null },
-    { titre: 'Verifications', lignes: lignesVerifications(r), note: r.voilement },
-    { titre: 'Instabilites (§6.3)', lignes: lignesInstabilite(r), note: null },
+    { titre: 'Vérifications', lignes: lignesVerifications(r), note: r.voilement },
+    { titre: 'Instabilités (§6.3)', lignes: lignesInstabilite(r), note: null },
     blocVerdict(r),
   ];
 }
@@ -183,7 +190,7 @@ export function tableHtml(lignes: readonly LigneResultat[]): string {
     .join('')}</tbody></table>`;
 }
 
-const LIBELLE_VERDICT: Record<string, string> = { conforme: 'Conforme', 'non-conforme': 'Non conforme', incomplet: 'Verification incomplete' };
+const LIBELLE_VERDICT: Record<string, string> = { conforme: 'Conforme', 'non-conforme': 'Non conforme', incomplet: 'Vérification incomplète' };
 
 /**
  * Le verdict pour le CSV et la note : le constat affiche a l'ecran
@@ -201,7 +208,7 @@ export function verdictHtml(r: { verdict: 'conforme' | 'non-conforme' | 'incompl
 export function bandeauMcr(r: { deversement: { M_cr: MomentCritique | null } }): string {
   const m = r.deversement.M_cr;
   if (m === null || m.origine !== 'hors-norme') return '';
-  return `<p class="alerte">M<sub>cr</sub> = ${aff(m.M_cr, 1)} kN.m est calcule par une expression HORS NORME (l'EN 1993-1-1 ne donne pas M<sub>cr</sub>) : ${notationHtml(m.source)}. Un M<sub>cr</sub> issu d'un calcul aux elements finis peut etre saisi.</p>`;
+  return `<p class="alerte">M<sub>cr</sub> = ${aff(m.M_cr, 1)} kN.m est calculé par une expression HORS NORME (l'EN 1993-1-1 ne donne pas M<sub>cr</sub>) : ${notationHtml(m.source)}. Un M<sub>cr</sub> issu d'un calcul aux éléments finis peut être saisi.</p>`;
 }
 
 /** Proprietes propres aux profils non doublement symetriques. */
@@ -209,14 +216,14 @@ export function lignesProprietesNonSymetriques(r: ResultatNonSymetrique): LigneR
   const p = r.proprietes;
   const lignes = [
     ...lignesProprietes(r),
-    L('y_G, z_G', 'centre de gravite, repere de construction', `${aff(p.yG, 1)} ; ${aff(p.zG, 1)} mm`),
+    L('y_G, z_G', 'centre de gravité, repère de construction', `${aff(p.yG, 1)} ; ${aff(p.zG, 1)} mm`),
     L('y_0, z_0', 'centre de cisaillement depuis G', `${aff(p.y0, 1)} ; ${aff(p.z0, 1)} mm`),
     L('I_t, I_w', p.origineTorsion, `${aff(p.It / 1e4, 2)} cm4 ; ${aff(p.Iw / 1e6, 1)} cm6`),
   ];
   if (Math.abs(p.Iyz) > 1e-6 * p.Iy) {
     lignes.push(
-      L('I_u, I_v', `axes principaux, alpha = ${aff((p.alpha * 180) / Math.PI, 1)} degres`, `${aff(p.Iu / 1e4, 1)} ; ${aff(p.Iv / 1e4, 1)} cm4`),
-      L('W_el,u, W_el,v', 'modules elastiques minimaux', `${aff(p.Wel_u / 1e3, 2)} ; ${aff(p.Wel_v / 1e3, 2)} cm3`),
+      L('I_u, I_v', `axes principaux, alpha = ${aff((p.alpha * 180) / Math.PI, 1)} degrés`, `${aff(p.Iu / 1e4, 1)} ; ${aff(p.Iv / 1e4, 1)} cm4`),
+      L('W_el,u, W_el,v', 'modules élastiques minimaux', `${aff(p.Wel_u / 1e3, 2)} ; ${aff(p.Wel_v / 1e3, 2)} cm3`),
       L('W_pl,u, W_pl,v', 'modules plastiques', `${aff(p.Wpl_u / 1e3, 2)} ; ${aff(p.Wpl_v / 1e3, 2)} cm3`)
     );
   }
@@ -239,25 +246,25 @@ export function lignesInstabiliteNonSymetrique(r: ResultatNonSymetrique): LigneR
   if (d.M_cr !== null) lignes.push(L('M_cr', d.M_cr.source, `${aff(d.M_cr.M_cr, 1)} kN.m`));
   lignes.push(
     L(
-      'deversement',
+      'déversement',
       d.motif,
-      d.applicable && d.Mb_Rd !== null ? `lambda_LT ${aff(d.lambda_LT ?? 0, 3)} ; chi_LT ${aff(d.chi_LT, 3)} ; M_b,Rd ${aff(d.Mb_Rd, 1)} kN.m` : d.aFournir ? 'NON VERIFIE' : 'non applicable'
+      d.applicable && d.Mb_Rd !== null ? `lambda_LT ${aff(d.lambda_LT ?? 0, 3)} ; chi_LT ${aff(d.chi_LT, 3)} ; M_b,Rd ${aff(d.Mb_Rd, 1)} kN.m` : d.aFournir ? 'NON VÉRIFIÉ' : 'non applicable'
     )
   );
   if (r.interaction633 !== null) {
     const i = r.interaction633;
     lignes.push(L('k_yy, k_yz, k_zy, k_zz', i.motif, [i.kyy, i.kyz, i.kzy, i.kzz].map((x) => aff(x, 3)).join(' ; ')));
   }
-  if (r.compose !== null) lignes.push(L('barre composee', r.compose.motif, `${aff(r.compose.espacement, 0)} mm`));
+  if (r.compose !== null) lignes.push(L('barre composée', r.compose.motif, `${aff(r.compose.espacement, 0)} mm`));
   return lignes;
 }
 
 export function blocsNonSymetriques(r: ResultatNonSymetrique): BlocResultat[] {
   return [
-    { titre: 'Proprietes recalculees', lignes: lignesProprietesNonSymetriques(r), note: null },
+    { titre: 'Propriétés recalculées', lignes: lignesProprietesNonSymetriques(r), note: null },
     { titre: 'Classification (§5.5)', lignes: lignesClassification(r), note: null },
-    { titre: 'Verifications', lignes: lignesVerifications(r), note: r.voilement },
-    { titre: 'Instabilites (§6.3)', lignes: lignesInstabiliteNonSymetrique(r), note: r.avertissements.length === 0 ? null : r.avertissements.join(' ') },
+    { titre: 'Vérifications', lignes: lignesVerifications(r), note: r.voilement },
+    { titre: 'Instabilités (§6.3)', lignes: lignesInstabiliteNonSymetrique(r), note: r.avertissements.length === 0 ? null : r.avertissements.join(' ') },
     blocVerdict(r),
   ];
 }
@@ -265,9 +272,9 @@ export function blocsNonSymetriques(r: ResultatNonSymetrique): BlocResultat[] {
 /** Bandeau des resultats hors norme ou etendus d'un profil non doublement symetrique. */
 export function bandeauNonSymetrique(r: ResultatNonSymetrique): string {
   const items: string[] = [];
-  if (r.flambements.length > 0) items.push('N<sub>cr</sub> de torsion et de flexion-torsion : expression HORS NORME (theorie des parois minces).');
-  if (r.interaction633?.motif.includes('ETENDUE')) items.push('§6.3.3 : annexe B ETENDUE hors de son domaine (section non doublement symetrique).');
-  if (r.deversement.aFournir) items.push('Deversement NON VERIFIE : saisir M<sub>cr</sub>.');
+  if (r.flambements.length > 0) items.push('N<sub>cr</sub> de torsion et de flexion-torsion : expression HORS NORME (théorie des parois minces).');
+  if (r.interaction633?.motif.includes('ÉTENDUE')) items.push('§6.3.3 : annexe B ÉTENDUE hors de son domaine (section non doublement symétrique).');
+  if (r.deversement.aFournir) items.push('Déversement NON VÉRIFIÉ : saisir M<sub>cr</sub>.');
   for (const a of r.avertissements) items.push(notationHtml(a));
   return items.length === 0 ? '' : `<p class="alerte">${items.join('<br/>')}</p>`;
 }
@@ -281,23 +288,23 @@ export function optionsCatalogue(listes: Array<{ famille: string; noms: string[]
 
 /** Le diagramme saisi, en clair, pour la note : l'ecran le montre, la note le dit. */
 function texteDiagramme(type: string, psi: number, Mh: number, Ms: number): string {
-  if (type === 'lineaire') return `lineaire, psi = ${aff(psi, 3)}`;
-  if (type === 'repartie') return 'charge repartie, appuis simples';
-  if (type === 'concentree-milieu') return 'charge concentree a mi-portee';
-  return `mixte (${type === 'mixte-repartie' ? 'repartie' : 'concentree'}) : M_h = ${aff(Mh, 3)} kN.m, psi = ${aff(psi, 3)}, M_s = ${aff(Ms, 3)} kN.m`;
+  if (type === 'lineaire') return `linéaire, psi = ${aff(psi, 3)}`;
+  if (type === 'repartie') return 'charge répartie, appuis simples';
+  if (type === 'concentree-milieu') return 'charge concentrée à mi-portée';
+  return `mixte (${type === 'mixte-repartie' ? 'répartie' : 'concentrée'}) : M_h = ${aff(Mh, 3)} kN.m, psi = ${aff(psi, 3)}, M_s = ${aff(Ms, 3)} kN.m`;
 }
 
 /** Bloc « Donnees » de la note : les entrees telles que l'ecran les montre. */
 export function blocEntrees(m: ModeleSaisie): BlocResultat {
   const p = profilGeneral(m);
   return {
-    titre: 'Donnees',
+    titre: 'Données',
     lignes: [
       { symbole: 'profil', libelle: provenance(p.nom), valeur: `${p.nom}, ${m.nuance}` },
       { symbole: 'N, M_y, M_z', libelle: 'sollicitations de calcul', valeur: `${aff(m.N, 3)} kN ; ${aff(m.My, 3)} ; ${aff(m.Mz, 3)} kN.m` },
       { symbole: 'V_z, V_y', libelle: 'efforts tranchants', valeur: `${aff(m.Vz, 3)} ; ${aff(m.Vy, 3)} kN` },
       { symbole: 'L_cr,y, L_cr,z, L', libelle: 'longueurs de flambement, entre maintiens', valeur: `${aff(m.Lcry, 3)} ; ${aff(m.Lcrz, 3)} ; ${aff(m.LLT, 3)} m` },
-      { symbole: 'diagramme LT', libelle: 'deversement (C1, C2, C_mLT)', valeur: texteDiagramme(m.diagramme, m.psiLT, 0, 0) },
+      { symbole: 'diagramme LT', libelle: 'déversement (C1, C2, C_mLT)', valeur: texteDiagramme(m.diagramme, m.psiLT, 0, 0) },
       { symbole: 'diagramme M_y', libelle: 'C_my, tableau B.3', valeur: texteDiagramme(m.diagrammeY, m.psiY, m.MhY, m.MsY) },
       { symbole: 'diagramme M_z', libelle: 'C_mz, tableau B.3', valeur: texteDiagramme(m.diagrammeZ, m.psiZ, m.MhZ, m.MsZ) },
     ],
@@ -310,10 +317,10 @@ export function avertissementsDeLaNote(
   e: { forme: 'symetrique'; resultat: ResultatElement } | { forme: 'non-symetrique'; resultat: ResultatNonSymetrique }
 ): string[] {
   const m = e.resultat.deversement.M_cr;
-  const avertissements = m !== null && m.origine === 'hors-norme' ? [`M_cr calcule HORS NORME : ${m.source}.`] : [];
+  const avertissements = m !== null && m.origine === 'hors-norme' ? [`M_cr calculé HORS NORME : ${m.source}.`] : [];
   if (e.forme === 'non-symetrique') {
-    if (e.resultat.flambements.length > 0) avertissements.push('N_cr de torsion et de flexion-torsion calcule HORS NORME (theorie des parois minces).');
-    if (e.resultat.deversement.aFournir) avertissements.push('Deversement NON VERIFIE : M_cr a fournir.');
+    if (e.resultat.flambements.length > 0) avertissements.push('N_cr de torsion et de flexion-torsion calculé HORS NORME (théorie des parois minces).');
+    if (e.resultat.deversement.aFournir) avertissements.push('Déversement NON VÉRIFIÉ : M_cr à fournir.');
     avertissements.push(...e.resultat.avertissements);
   }
   return avertissements;

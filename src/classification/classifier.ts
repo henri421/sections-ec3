@@ -112,7 +112,7 @@ function classifierSymetrique(p: ProfilDoublementSymetrique, m: Materiau, prop: 
       // Note du tableau 5.2 : c = h - 3t pour les tubes rectangulaires.
       cAme = p.h - 3 * p.t;
       tAme = p.t;
-      nomAme = 'paroi laterale (h - 3t)';
+      nomAme = 'paroi latérale (h - 3t)';
     } else {
       const r = p.type === 'I-lamine' ? p.r : 0;
       const gorge = p.type === 'I-soude' ? p.a * Math.SQRT2 : 0;
@@ -125,7 +125,7 @@ function classifierSymetrique(p: ProfilDoublementSymetrique, m: Materiau, prop: 
       // CHOIX CONSERVATIF, symetrique de celui des parois paralleles a b :
       // sous M_z, la paroi laterale est classee en compression uniforme.
       const lim: [number, number, number] = [33 * eps, 38 * eps, 42 * eps];
-      parois.push({ paroi: nomAme, c: cAme, t: tAme, elancement: elAme, limites: lim, classe: classeDe(elAme, lim), detail: 'paroi interne comprimee (M_z non nul)' });
+      parois.push({ paroi: nomAme, c: cAme, t: tAme, elancement: elAme, limites: lim, classe: classeDe(elAme, lim), detail: 'paroi interne comprimée (M_z non nul)' });
     } else {
       const { alpha, psi } = distributionAme(cAme, tAme, m.fy, prop, a);
       const limAme = limitesParoiInterne(eps, alpha, psi);
@@ -144,13 +144,13 @@ function classifierSymetrique(p: ProfilDoublementSymetrique, m: Materiau, prop: 
       // Parois paralleles a b : en compression (N, M_y) ; classement en compression uniforme, meme sous M_z seul (conservatif).
       const c = p.b - 3 * p.t;
       const lim: [number, number, number] = [33 * eps, 38 * eps, 42 * eps];
-      parois.push({ paroi: 'paroi superieure (b - 3t)', c, t: p.t, elancement: c / p.t, limites: lim, classe: traction ? 1 : classeDe(c / p.t, lim), detail: 'paroi interne comprimee' });
+      parois.push({ paroi: 'paroi supérieure (b - 3t)', c, t: p.t, elancement: c / p.t, limites: lim, classe: traction ? 1 : classeDe(c / p.t, lim), detail: 'paroi interne comprimée' });
     } else {
       const r = p.type === 'I-lamine' ? p.r : 0;
       const gorge = p.type === 'I-soude' ? p.a * Math.SQRT2 : 0;
       const c = (p.b - p.tw - 2 * r - 2 * gorge) / 2;
       const lim: [number, number, number] = [9 * eps, 10 * eps, 14 * eps];
-      parois.push({ paroi: 'semelle (console)', c, t: p.tf, elancement: c / p.tf, limites: lim, classe: traction ? 1 : classeDe(c / p.tf, lim), detail: 'paroi en console comprimee, tableau 5.2 feuille 2' });
+      parois.push({ paroi: 'semelle (console)', c, t: p.tf, elancement: c / p.tf, limites: lim, classe: traction ? 1 : classeDe(c / p.tf, lim), detail: 'paroi en console comprimée, tableau 5.2 feuille 2' });
     }
   }
   const gouv = parois.reduce((x, y) => (y.classe > x.classe ? y : x));
@@ -177,7 +177,7 @@ function paroisCorniere(c: ProfilL, prefixe: string, eps: number, comprime: bool
     const grand = Math.max(c.h, c.b);
     const l1: [number, number, number] = [0, 0, 15 * eps];
     const l2: [number, number, number] = [0, 0, 11.5 * eps];
-    const detail = 'corniere comprimee (tableau 5.2 feuille 3) : pas de classe 1 ou 2';
+    const detail = 'cornière comprimée (tableau 5.2 feuille 3) : pas de classe 1 ou 2';
     res.push({ paroi: `${prefixe}h / t`, c: grand, t: c.t, elancement: grand / c.t, limites: l1, classe: classeDe(grand / c.t, l1), detail });
     res.push({ paroi: `${prefixe}(b + h) / 2t`, c: (c.b + c.h) / 2, t: c.t, elancement: (c.b + c.h) / (2 * c.t), limites: l2, classe: classeDe((c.b + c.h) / (2 * c.t), l2), detail });
   }
@@ -197,7 +197,7 @@ function paroisU(u: ProfilU, nAmes: number, eps: number, fy: number, prop: Propr
   const res: ClasseParoi[] = [];
   if (a.Mz !== 0) {
     const lim: [number, number, number] = [33 * eps, 38 * eps, 42 * eps];
-    res.push({ paroi: 'ame', c: cAme, t: u.tw, elancement: cAme / u.tw, limites: lim, classe: classeDe(cAme / u.tw, lim), detail: 'paroi interne comprimee (M_z non nul)' });
+    res.push({ paroi: 'ame', c: cAme, t: u.tw, elancement: cAme / u.tw, limites: lim, classe: classeDe(cAme / u.tw, lim), detail: 'paroi interne comprimée (M_z non nul)' });
   } else {
     // alpha : effort normal reparti sur les n ames.
     const { alpha, psi } = distributionAme(cAme, nAmes * u.tw, fy, prop, a);
@@ -218,7 +218,7 @@ function classifierNonSymetrique(p: Exclude<Profil, ProfilDoublementSymetrique>,
       parois = paroisCorniere(p, '', eps, comprime, traction);
       break;
     case '2L':
-      parois = paroisCorniere(corniereOrientee(p.corniere, p.accolee), 'corniere, ', eps, comprime, traction);
+      parois = paroisCorniere(corniereOrientee(p.corniere, p.accolee), 'cornière, ', eps, comprime, traction);
       break;
     case 'U':
       parois = paroisU(p, 1, eps, m.fy, prop, a, traction);

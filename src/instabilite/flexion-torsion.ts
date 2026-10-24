@@ -35,7 +35,7 @@ import { ALPHA, facteurReduction, type Courbe } from './flambement';
 const N_PAR_KN = 1000;
 
 export const SOURCE_NCR_TF =
-  'Theorie des barres a parois minces (Timoshenko et Gere ; NCCI SN001) — source bibliographique, HORS NORME (l EN 1993-1-1 ne donne pas N_cr,T ni N_cr,TF)';
+  "Théorie des barres à parois minces (Timoshenko et Gere ; NCCI SN001) — source bibliographique, HORS NORME (l'EN 1993-1-1 ne donne pas N_cr,T ni N_cr,TF)";
 
 /** Courbe de flambement, tableau 6.2 : L courbe b, U courbe c, tous axes et toutes nuances. */
 export function courbeNonSymetrique(p: ProfilNonSymetrique): Courbe {

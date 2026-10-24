@@ -62,7 +62,7 @@ export interface SectionEfficaceSymetrique {
 
 /** k_sigma d'une paroi interne, tableau 4.1 de l'EN 1993-1-5. */
 export function kSigmaInterne(psi: number): number {
-  if (psi > 1 || psi < -3) throw new Error(`psi = ${fr(psi, 3)} hors du tableau 4.1 (de -3 a 1).`);
+  if (psi > 1 || psi < -3) throw new Error(`psi = ${fr(psi, 3)} hors du tableau 4.1 (de -3 à 1).`);
   if (psi === 1) return 4;
   if (psi > 0) return 8.2 / (1.05 + psi);
   if (psi === 0) return 7.81;
@@ -162,7 +162,7 @@ function largeursI(p: Extract<ProfilDoublementSymetrique, { type: 'I-lamine' | '
  */
 export function sectionEfficaceSymetrique(p: ProfilDoublementSymetrique, m: Materiau, prop: Proprietes): SectionEfficaceSymetrique {
   if (p.type === 'tube-circulaire') {
-    throw new Error('Tube circulaire de classe 4 : resistance des coques (EN 1993-1-6) hors perimetre.');
+    throw new Error('Tube circulaire de classe 4 : résistance des coques (EN 1993-1-6) hors périmètre.');
   }
   const eps = epsilon(m.fy);
   const parois: ParoiEfficaceSym[] = [];
@@ -180,16 +180,16 @@ export function sectionEfficaceSymetrique(p: ProfilDoublementSymetrique, m: Mate
       parois.push({ paroi: nom, cas: 'compression', type: 'interne', c, t, psi: 1, kSigma: k, lambdaP: lp, rho });
       return (1 - rho) * c * t;
     };
-    const Aeff = prop.A - 2 * pc('parois paralleles a b', cB) - 2 * pc('parois paralleles a h', cH);
+    const Aeff = prop.A - 2 * pc('parois parallèles à b', cB) - 2 * pc('parois parallèles à h', cH);
 
     // Flexion autour de y (v = z) : paroi superieure comprimee, parois laterales flechies.
     const flexion = (cas: 'flexion y' | 'flexion z', cComp: number, cFlechie: number, H: number, I: number) => {
       const lp = lambdaP(cComp, t, eps, 4);
       const rho = rhoInterne(lp, 1);
-      parois.push({ paroi: 'paroi comprimee', cas, type: 'interne', c: cComp, t, psi: 1, kSigma: 4, lambdaP: lp, rho });
+      parois.push({ paroi: 'paroi comprimée', cas, type: 'interne', c: cComp, t, psi: 1, kSigma: 4, lambdaP: lp, rho });
       const trousComp = rho < 1 ? [trou((1 - rho) * cComp, t, H / 2 - t / 2)] : [];
       const etape = apresTrous(prop.A, I, H / 2, trousComp);
-      const ames = interneFlechie('parois flechies', cas, cFlechie, t, etape.vG, eps, [t, t]);
+      const ames = interneFlechie('parois fléchies', cas, cFlechie, t, etape.vG, eps, [t, t]);
       parois.push(ames.paroi);
       return apresTrous(prop.A, I, H / 2, [...trousComp, ...ames.trous]);
     };
@@ -212,7 +212,7 @@ export function sectionEfficaceSymetrique(p: ProfilDoublementSymetrique, m: Mate
   const Aeff = prop.A - 4 * perteAile * p.tf - (1 - rhoAme1) * cAme * p.tw;
 
   // Flexion autour de y : consoles de la semelle superieure aux extremites libres.
-  parois.push({ paroi: 'semelle comprimee (consoles)', cas: 'flexion y', type: 'console', c: cAile, t: p.tf, psi: 1, kSigma: 0.43, lambdaP: lpAile, rho: rhoAile });
+  parois.push({ paroi: 'semelle comprimée (consoles)', cas: 'flexion y', type: 'console', c: cAile, t: p.tf, psi: 1, kSigma: 0.43, lambdaP: lpAile, rho: rhoAile });
   const trousSemelle = rhoAile < 1 ? [trou(2 * perteAile, p.tf, p.h / 2 - p.tf / 2)] : [];
   const etape = apresTrous(prop.A, prop.Iy, p.h / 2, trousSemelle);
   const ame = interneFlechie('ame', 'flexion y', cAme, p.tw, etape.vG, eps, [p.tw]);
@@ -221,7 +221,7 @@ export function sectionEfficaceSymetrique(p: ProfilDoublementSymetrique, m: Mate
 
   // Flexion autour de z (v = y) : console comprimee de chaque semelle a son
   // extremite libre ; ame en compression uniforme (choix conservatif).
-  parois.push({ paroi: 'consoles comprimees', cas: 'flexion z', type: 'console', c: cAile, t: p.tf, psi: 1, kSigma: 0.43, lambdaP: lpAile, rho: rhoAile });
+  parois.push({ paroi: 'consoles comprimées', cas: 'flexion z', type: 'console', c: cAile, t: p.tf, psi: 1, kSigma: 0.43, lambdaP: lpAile, rho: rhoAile });
   const trousZ: Trou[] = [];
   if (rhoAile < 1) {
     // Deux semelles : epaisseur 2 t_f le long de z, largeur perdue le long de y.
@@ -249,6 +249,6 @@ function resultat(
     parois,
     motif:
       `EN 1993-1-5 §4.4 : A_eff = ${fr(Aeff, 0)} mm2, W_eff,y = ${fr(fy.W / 1e3, 1)} cm3, W_eff,z = ${fr(fz.W / 1e3, 1)} cm3` +
-      (reduites.length === 0 ? '' : ` ; parois reduites : ${reduites.map((x) => `${x.paroi} (${x.cas}, rho = ${fr(x.rho, 3)})`).join(', ')}`),
+      (reduites.length === 0 ? '' : ` ; parois réduites : ${reduites.map((x) => `${x.paroi} (${x.cas}, rho = ${fr(x.rho, 3)})`).join(', ')}`),
   };
 }

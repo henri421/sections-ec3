@@ -56,14 +56,14 @@ export interface MomentsFlexion {
  * M_v = -M_y sin alpha + M_z cos alpha, alpha etant l'angle de u depuis y.
  */
 export function momentsDeCalcul(p: ProfilNonSymetrique, prop: Proprietes, My: number, Mz: number): MomentsFlexion {
-  if (p.type !== 'L') return { axes: 'yz', M1: Math.abs(My), M2: Math.abs(Mz), motif: 'axes y, z principaux par symetrie' };
+  if (p.type !== 'L') return { axes: 'yz', M1: Math.abs(My), M2: Math.abs(Mz), motif: 'axes y, z principaux par symétrie' };
   const c = Math.cos(prop.alpha);
   const s = Math.sin(prop.alpha);
   return {
     axes: 'uv',
     M1: Math.abs(My * c + Mz * s),
     M2: Math.abs(-My * s + Mz * c),
-    motif: `moments projetes sur les axes principaux (alpha = ${fr((prop.alpha * 180) / Math.PI, 1)} degres)`,
+    motif: `moments projetés sur les axes principaux (alpha = ${fr((prop.alpha * 180) / Math.PI, 1)} degrés)`,
   };
 }
 
@@ -85,10 +85,10 @@ export interface ResistancesNonSymetriques {
 export function aireCisaillementNonSymetrique(p: ProfilNonSymetrique, prop: Proprietes): { Avz: number; Avy: number; motif: string } {
   switch (p.type) {
     case 'L':
-      return { Avz: p.h * p.t, Avy: p.b * p.t, motif: 'aile parallele a l effort (aile x t), choix declare' };
+      return { Avz: p.h * p.t, Avy: p.b * p.t, motif: "aile parallèle à l'effort (aile x t), choix déclaré" };
     case '2L': {
       const c = corniereOrientee(p.corniere, p.accolee);
-      return { Avz: 2 * c.h * c.t, Avy: 2 * c.b * c.t, motif: 'ailes paralleles a l effort, choix declare' };
+      return { Avz: 2 * c.h * c.t, Avy: 2 * c.b * c.t, motif: "ailes parallèles à l'effort, choix déclaré" };
     }
     case 'U':
     case '2U': {
@@ -96,7 +96,7 @@ export function aireCisaillementNonSymetrique(p: ProfilNonSymetrique, prop: Prop
       const n = p.type === 'U' ? 1 : 2;
       // §6.2.6(3)(c), U lamine, effort parallele a l'ame : A - 2 b t_f + (t_w + r) t_f par profil.
       const Avz = n * (prop.A / n - 2 * u.b * u.tf + (u.tw + u.r1) * u.tf);
-      return { Avz, Avy: prop.A - prop.Aw, motif: 'A_v,z : §6.2.6(3)c ; A_v,y : A - h_w t_w, choix declare' };
+      return { Avz, Avy: prop.A - prop.Aw, motif: 'A_v,z : §6.2.6(3)c ; A_v,y : A - h_w t_w, choix déclaré' };
     }
   }
 }
@@ -153,12 +153,12 @@ export function resistancesNonSymetriques(
  * cornieres.
  */
 export function verifierVoilementNonSymetrique(p: ProfilNonSymetrique, m: Materiau, prop: Proprietes, profil: ProfilEc3): string {
-  if (p.type === 'L' || p.type === '2L') return 'Sans objet pour une corniere.';
+  if (p.type === 'L' || p.type === '2L') return 'Sans objet pour une cornière.';
   const u = p.type === 'U' ? p : p.profilU;
   const lim = (72 * epsilon(m.fy)) / profil.eta.valeur;
   const el = prop.hw / u.tw;
-  if (el > lim) throw new Error(`h_w / t_w = ${fr(el, 1)} > 72 epsilon / eta = ${fr(lim, 1)} : voilement par cisaillement (EN 1993-1-5 §5) hors perimetre.`);
-  return `h_w / t_w = ${fr(el, 1)} <= 72 epsilon / eta = ${fr(lim, 1)} : pas de voilement par cisaillement a verifier (§6.2.6(6)).`;
+  if (el > lim) throw new Error(`h_w / t_w = ${fr(el, 1)} > 72 epsilon / eta = ${fr(lim, 1)} : voilement par cisaillement (EN 1993-1-5 §5) hors périmètre.`);
+  return `h_w / t_w = ${fr(el, 1)} <= 72 epsilon / eta = ${fr(lim, 1)} : pas de voilement par cisaillement à vérifier (§6.2.6(6)).`;
 }
 
 export interface InteractionNonSymetrique {
@@ -207,6 +207,6 @@ export function interactionNonSymetrique(
     dM1,
     dM2,
     taux,
-    motif: `${classe === 4 ? 'classe 4 : critere (6.44), moments augmentes de N e_N' : 'critere lineaire (6.2)'}, axes ${axes}${rho > 0 ? `, f_y reduit par le cisaillement (rho = ${fr(rho, 3)})` : ''} ; ${mf.motif}`,
+    motif: `${classe === 4 ? 'classe 4 : critère (6.44), moments augmentés de N e_N' : 'critère linéaire (6.2)'}, axes ${axes}${rho > 0 ? `, f_y réduit par le cisaillement (rho = ${fr(rho, 3)})` : ''} ; ${mf.motif}`,
   };
 }

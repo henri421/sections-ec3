@@ -169,7 +169,7 @@ export function epaisseurMax(p: Profil): number {
 /** fy et fu selon la nuance et l'epaisseur, tableau 3.1. Leve au-dela de 80 mm. */
 export function materiau(nuance: Nuance, p: Profil): Materiau {
   const t = epaisseurMax(p);
-  if (t > 80) throw new Error(`Epaisseur ${fr(t, 3)} mm > 80 mm : hors du tableau 3.1.`);
+  if (t > 80) throw new Error(`Épaisseur ${fr(t, 3)} mm > 80 mm : hors du tableau 3.1.`);
   const [fy, fu] = TABLEAU_3_1[nuance][t <= 40 ? 0 : 1];
   return { nuance, fy, fu, epaisseur: t };
 }

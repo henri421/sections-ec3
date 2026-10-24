@@ -102,12 +102,12 @@ function rayonMinComposant(p: ProfilNonSymetrique): number {
 export function verifierCompose(p: ProfilNonSymetrique, espacement: number | null): ResultatNonSymetrique['compose'] {
   if (p.type !== '2L' && p.type !== '2U') return null;
   if (espacement === null) throw new Error('Profil compose : espacement des liaisons requis (tableau 6.9).');
-  exigerPositif(espacement, 'L espacement des liaisons', 'mm');
+  exigerPositif(espacement, "L'espacement des liaisons", 'mm');
   const imin = rayonMinComposant(p);
   const limite = 15 * imin;
   if (espacement > limite) {
     throw new Error(
-      `Espacement des liaisons ${fr(espacement, 0)} mm > 15 i_min = ${fr(limite, 0)} mm (tableau 6.9) : barre a membrures ecartees (§6.4), hors perimetre.`
+      `Espacement des liaisons ${fr(espacement, 0)} mm > 15 i_min = ${fr(limite, 0)} mm (tableau 6.9) : barre à membrures écartées (§6.4), hors périmètre.`
     );
   }
   return { espacement, limite, motif: `espacement ${fr(espacement, 0)} mm <= 15 i_min = ${fr(limite, 0)} mm (i_min = ${fr(imin, 1)} mm, un profil) : barre unique (§6.4.4, tableau 6.9)` };
@@ -127,9 +127,9 @@ export function verifierNonSymetrique(d: DonneesNonSymetriques, profil: ProfilEc
   const inter = interactionNonSymetrique(p, prop, classe, eff, res, { N: d.N, My: d.My, Mz: d.Mz, Vz: d.Vz, Vy: d.Vy });
   const mf = momentsDeCalcul(p, prop, d.My, d.Mz);
   const avert: string[] = [];
-  if (p.type === 'L' && (d.My !== 0 || d.Mz !== 0)) avert.push(`Corniere : ${mf.motif}.`);
-  if (p.type === 'U' && d.Vz !== 0) avert.push('Profil en U : un effort applique dans le plan de l ame (hors du centre de cisaillement) induit une torsion non traitee.');
-  if (compose !== null) avert.push(`Profil compose : ${compose.motif}.`);
+  if (p.type === 'L' && (d.My !== 0 || d.Mz !== 0)) avert.push(`Cornière : ${mf.motif}.`);
+  if (p.type === 'U' && d.Vz !== 0) avert.push("Profil en U : un effort appliqué dans le plan de l'âme (hors du centre de cisaillement) induit une torsion non traitée.");
+  if (compose !== null) avert.push(`Profil composé : ${compose.motif}.`);
 
   const verifs: Verification[] = [];
   const g1 = profil.gamma_M1.valeur;
@@ -140,12 +140,12 @@ export function verifierNonSymetrique(d: DonneesNonSymetriques, profil: ProfilEc
     clause: '§6.2.3, §6.2.4',
     applicable: d.N !== 0,
     taux: d.N === 0 ? null : Math.abs(d.N) / (d.N > 0 ? res.N_Rd : NRdTraction),
-    motif: d.N === 0 ? 'Aucun effort normal.' : d.N > 0 ? `N_c,Rd = ${fr(res.N_Rd, 0)} kN (${res.module === 'efficace' ? 'A_eff' : 'A'})` : `N_pl,Rd = ${fr(NRdTraction, 0)} kN (section nette non traitee : assemblages-ec3)`,
+    motif: d.N === 0 ? 'Aucun effort normal.' : d.N > 0 ? `N_c,Rd = ${fr(res.N_Rd, 0)} kN (${res.module === 'efficace' ? 'A_eff' : 'A'})` : `N_pl,Rd = ${fr(NRdTraction, 0)} kN (section nette non traitée : assemblages-ec3)`,
   });
   verifs.push({ nom: 'Cisaillement selon z', clause: '§6.2.6', applicable: d.Vz !== 0, taux: d.Vz === 0 ? null : Math.abs(d.Vz) / res.Vz_Rd, motif: d.Vz === 0 ? 'Aucun effort tranchant selon z.' : `V_pl,z,Rd = ${fr(res.Vz_Rd, 0)} kN ; ${res.motifAv}` });
   verifs.push({ nom: 'Cisaillement selon y', clause: '§6.2.6', applicable: d.Vy !== 0, taux: d.Vy === 0 ? null : Math.abs(d.Vy) / res.Vy_Rd, motif: d.Vy === 0 ? 'Aucun effort tranchant selon y.' : `V_pl,y,Rd = ${fr(res.Vy_Rd, 0)} kN ; ${res.motifAv}` });
   const avecMoment = d.My !== 0 || d.Mz !== 0;
-  verifs.push({ nom: 'Flexion composee de section', clause: classe === 4 ? '§6.2.9.3' : '§6.2.1(7)', applicable: avecMoment || d.N !== 0, taux: avecMoment || d.N > 0 ? inter.taux : null, motif: inter.motif });
+  verifs.push({ nom: 'Flexion composée de section', clause: classe === 4 ? '§6.2.9.3' : '§6.2.1(7)', applicable: avecMoment || d.N !== 0, taux: avecMoment || d.N > 0 ? inter.taux : null, motif: inter.motif });
 
   const comprime = d.N > 0;
   let flambements: FlambementNonSymetrique[] = [];
@@ -169,11 +169,11 @@ export function verifierNonSymetrique(d: DonneesNonSymetriques, profil: ProfilEc
       });
     }
   } else {
-    verifs.push({ nom: 'Flambement', clause: '§6.3.1', applicable: false, taux: null, motif: 'Element non comprime.' });
+    verifs.push({ nom: 'Flambement', clause: '§6.3.1', applicable: false, taux: null, motif: 'Élément non comprimé.' });
   }
 
   const dev = deversementNonSymetrique(p, mat, prop, classe, eff, mf.M1, d.deversementEmpeche, d.L_LT, d.diagrammeLT, d.pointApplication, d.McrSaisi, profil);
-  verifs.push({ nom: 'Deversement', clause: '§6.3.2', applicable: dev.applicable, taux: dev.applicable && dev.Mb_Rd !== null ? mf.M1 / dev.Mb_Rd : null, motif: dev.motif });
+  verifs.push({ nom: 'Déversement', clause: '§6.3.2', applicable: dev.applicable, taux: dev.applicable && dev.Mb_Rd !== null ? mf.M1 / dev.Mb_Rd : null, motif: dev.motif });
 
   let i633: Interaction633 | null = null;
   if (comprime && avecMoment) {
@@ -221,14 +221,14 @@ export function verifierNonSymetrique(d: DonneesNonSymetriques, profil: ProfilEc
         sensibleTorsion: dev.applicable,
         dMy: inter.dM1,
         dMz: inter.dM2,
-        horsDomaine: dansDomaine ? undefined : 'annexe B ETENDUE hors de son domaine (section non doublement symetrique), formules de classe 3, chi minimal entre flexion et flexion-torsion',
+        horsDomaine: dansDomaine ? undefined : 'annexe B ÉTENDUE hors de son domaine (section non doublement symétrique), formules de classe 3, chi minimal entre flexion et flexion-torsion',
       },
       profil
     );
-    verifs.push({ nom: 'Flexion composee, expression (6.61)', clause: '§6.3.3', applicable: true, taux: i633.taux61, motif: i633.motif });
-    verifs.push({ nom: 'Flexion composee, expression (6.62)', clause: '§6.3.3', applicable: true, taux: i633.taux62, motif: i633.motif });
+    verifs.push({ nom: 'Flexion composée, expression (6.61)', clause: '§6.3.3', applicable: true, taux: i633.taux61, motif: i633.motif });
+    verifs.push({ nom: 'Flexion composée, expression (6.62)', clause: '§6.3.3', applicable: true, taux: i633.taux62, motif: i633.motif });
   } else {
-    verifs.push({ nom: 'Flexion composee avec instabilite', clause: '§6.3.3', applicable: false, taux: null, motif: comprime ? 'Aucun moment.' : 'Element non comprime.' });
+    verifs.push({ nom: 'Flexion composée avec instabilité', clause: '§6.3.3', applicable: false, taux: null, motif: comprime ? 'Aucun moment.' : 'Élément non comprimé.' });
   }
 
   const avecTaux = verifs.filter((v) => v.taux !== null);
@@ -238,7 +238,7 @@ export function verifierNonSymetrique(d: DonneesNonSymetriques, profil: ProfilEc
   let motif = gouv === null ? 'Aucune sollicitation.' : `Taux maximal ${fr(tauxMax, 3)} : ${gouv.nom.toLowerCase()} (${gouv.clause}).`;
   if (verdict === 'conforme' && dev.aFournir) {
     verdict = 'incomplet';
-    motif = `${motif} Deversement non verifie : M_cr a fournir.`;
+    motif = `${motif} Déversement non vérifié : M_cr a fournir.`;
   }
   return {
     verdict,

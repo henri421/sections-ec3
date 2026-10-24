@@ -38,9 +38,9 @@ export interface NoteDeCalcul {
 }
 
 const AIDE_AU_CALCUL =
-  "Outil d'aide au calcul. Cet outil constate, il ne prescrit pas : il rend des resistances et des " +
-  "taux de travail, jamais un choix de profil. La verification finale et la responsabilite incombent a " +
-  "l'ingenieur du projet. Cette note est un compte rendu, pas une justification reglementaire signee.";
+  "Outil d'aide au calcul. Cet outil constate, il ne prescrit pas : il rend des résistances et des " +
+  "taux de travail, jamais un choix de profil. La vérification finale et la responsabilité incombent à " +
+  "l'ingénieur du projet. Cette note est un compte rendu, pas une justification réglementaire signée.";
 
 const STYLE_NOTE = `
   body { margin: 0; padding: 24px 28px; background: var(--surface); color: var(--texte); font: 14px/1.5 var(--sans); }
@@ -67,17 +67,17 @@ const STYLE_NOTE = `
 export function hypothesesDeLaNote(forme: 'symetrique' | 'non-symetrique'): string[] {
   return forme === 'symetrique'
     ? [
-        'Proprietes recalculees a partir des dimensions nominales ; aucune classe stockee.',
-        'Semelles classees en compression uniforme, du cote de la securite.',
-        'Facteurs k_ij de l annexe B du §6.3.3 ; C_m pour des moments lineaires.',
-        'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
+        'Propriétés recalculées à partir des dimensions nominales ; aucune classe stockée.',
+        'Semelles classées en compression uniforme, du côté de la sécurité.',
+        "Facteurs k_ij de l'annexe B du §6.3.3 ; C_m pour des moments linéaires.",
+        "Valeurs recommandées de l'EN 1993-1-1 ; aucune annexe nationale codée.",
       ]
     : [
-        'Proprietes recalculees sur le contour ; I_t, I_w et centre de cisaillement des profils lamines repris du producteur.',
+        'Propriétés recalculées sur le contour ; I_t, I_w et centre de cisaillement des profils laminés repris du producteur.',
         'Classe 4 : section efficace unique, toutes parois en compression uniforme (EN 1993-1-5 §4.4).',
-        'Interaction N-M de section par le critere lineaire (6.2), (6.44) en classe 4.',
-        'Annexe B du §6.3.3 etendue aux cornieres, U et 2L, hors de son domaine.',
-        'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
+        'Interaction N-M de section par le critère linéaire (6.2), (6.44) en classe 4.',
+        'Annexe B du §6.3.3 étendue aux cornières, U et 2L, hors de son domaine.',
+        "Valeurs recommandées de l'EN 1993-1-1 ; aucune annexe nationale codée.",
       ];
 }
 
@@ -105,18 +105,18 @@ export function noteDeCalculHtml(note: NoteDeCalcul, styles: string): string {
   const hypotheses =
     note.hypotheses.length === 0
       ? ''
-      : `<h2>Hypotheses et limites</h2><ul>${note.hypotheses.map((h) => `<li>${notationHtml(h)}</li>`).join('')}</ul>`;
+      : `<h2>Hypothèses et limites</h2><ul>${note.hypotheses.map((h) => `<li>${notationHtml(h)}</li>`).join('')}</ul>`;
   return `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8" />
 <title>Note de calcul — ${notationHtml(note.titre)}</title>
 <style>${styles}${STYLE_NOTE}</style></head>
 <body>
-<h1>Note de calcul — element en acier (EN 1993-1-1)</h1>
+<h1>Note de calcul — élément en acier (EN 1993-1-1)</h1>
 <p class="date">${notationHtml(note.titre)} · ${notationHtml(note.date)} · profil : ${notationHtml(note.profil)}</p>
 ${avertissements}
-<h2>Donnees d entree</h2>${note.entrees.map(tableDuBloc).join('')}
+<h2>Données d'entrée</h2>${note.entrees.map(tableDuBloc).join('')}
 <h2>Profil</h2>${dessins}
-<h2>Verifications</h2>${note.resultats.map(tableDuBloc).join('')}
+<h2>Vérifications</h2>${note.resultats.map(tableDuBloc).join('')}
 ${hypotheses}
 <p class="pied">${AIDE_AU_CALCUL}</p>
 </body></html>`;

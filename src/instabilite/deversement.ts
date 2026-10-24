@@ -19,7 +19,7 @@ import { exigerPositif, fr } from '../norms/profil';
 import { ALPHA, type Courbe } from './flambement';
 
 export const SOURCE_MCR =
-  'Expression a trois termes, ENV 1993-1-1 annexe F et NCCI SN003 — source bibliographique, HORS NORME (l EN 1993-1-1 ne donne pas M_cr)';
+  "Expression à trois termes, ENV 1993-1-1 annexe F et NCCI SN003 — source bibliographique, HORS NORME (l'EN 1993-1-1 ne donne pas M_cr)";
 
 const NMM_PAR_KNM = 1e6;
 
@@ -42,7 +42,7 @@ export type PointApplication = 'semelle-superieure' | 'centre' | 'semelle-inferi
 export function coefficientsC(d: DiagrammeLT): { C1: number; C2: number } {
   if (d.type === 'repartie') return { C1: 1.132, C2: 0.459 };
   if (d.type === 'concentree-milieu') return { C1: 1.365, C2: 0.553 };
-  if (!Number.isFinite(d.psi) || d.psi < -1 || d.psi > 1) throw new Error('psi doit etre compris entre -1 et 1 (-).');
+  if (!Number.isFinite(d.psi) || d.psi < -1 || d.psi > 1) throw new Error('psi doit être compris entre -1 et 1 (-).');
   return { C1: Math.min(2.7, 1.88 - 1.4 * d.psi + 0.52 * d.psi * d.psi), C2: 0 };
 }
 
@@ -70,10 +70,10 @@ export function momentCritique(
 ): MomentCritique {
   if (saisi !== null) {
     exigerPositif(saisi, 'Le moment critique saisi M_cr', 'kN.m');
-    return { M_cr: saisi, origine: 'saisi', source: 'saisi par l utilisateur (calcul exterieur)', C1: null, C2: null, z_g: null };
+    return { M_cr: saisi, origine: 'saisi', source: "saisi par l'utilisateur (calcul extérieur)", C1: null, C2: null, z_g: null };
   }
   if (p.type !== 'I-lamine' && p.type !== 'I-soude') {
-    throw new Error('M_cr par l expression a trois termes : profils en I doublement symetriques seulement.');
+    throw new Error("M_cr par l'expression à trois termes : profils en I doublement symétriques seulement.");
   }
   exigerPositif(L, 'La longueur entre maintiens lateraux L', 'mm');
   const { C1, C2 } = coefficientsC(d);
@@ -136,10 +136,10 @@ export function deversement(
 ): Deversement {
   const methode = 'laminee' as const;
   if (maintenu) {
-    return { applicable: false, motif: 'Membrure comprimee maintenue lateralement en continu : deversement empeche.', methode, M_cr: null, lambda_LT: null, courbe: null, chi_LT: 1, f: null, Mb_Rd: null };
+    return { applicable: false, motif: 'Membrure comprimée maintenue latéralement en continu : déversement empêché.', methode, M_cr: null, lambda_LT: null, courbe: null, chi_LT: 1, f: null, Mb_Rd: null };
   }
   if (p.type === 'tube-circulaire' || p.type === 'tube-rectangulaire') {
-    return { applicable: false, motif: 'Section creuse fermee : rigidite de torsion elevee, deversement non applicable.', methode, M_cr: null, lambda_LT: null, courbe: null, chi_LT: 1, f: null, Mb_Rd: null };
+    return { applicable: false, motif: 'Section creuse fermée : rigidité de torsion élevée, déversement non applicable.', methode, M_cr: null, lambda_LT: null, courbe: null, chi_LT: 1, f: null, Mb_Rd: null };
   }
   const Mcr = momentCritique(p, prop, L, d, point, McrSaisi);
   const lambda_LT = Math.sqrt((Wy * m.fy) / (Mcr.M_cr * NMM_PAR_KNM));
@@ -149,8 +149,8 @@ export function deversement(
       applicable: false,
       motif:
         lambda_LT <= l0
-          ? `lambda_LT = ${fr(lambda_LT, 3)} <= lambda_LT,0 = ${fr(l0, 2)} : deversement negligeable (§6.3.2.2(4)).`
-          : `M_Ed / M_cr = ${fr(Math.abs(MEd) / Mcr.M_cr, 3)} <= lambda_LT,0^2 = ${fr(l0 * l0, 3)} : deversement negligeable (§6.3.2.2(4)).`,
+          ? `lambda_LT = ${fr(lambda_LT, 3)} <= lambda_LT,0 = ${fr(l0, 2)} : déversement négligeable (§6.3.2.2(4)).`
+          : `M_Ed / M_cr = ${fr(Math.abs(MEd) / Mcr.M_cr, 3)} <= lambda_LT,0^2 = ${fr(l0 * l0, 3)} : déversement négligeable (§6.3.2.2(4)).`,
       methode,
       M_cr: Mcr,
       lambda_LT,
@@ -170,7 +170,7 @@ export function deversement(
   const chiMod = Math.min(1, 1 / (lambda_LT * lambda_LT), chi / f);
   return {
     applicable: true,
-    motif: `Methode du §6.3.2.3, courbe ${courbe}, k_c = ${fr(kc, 3)}, chi_LT,mod = chi_LT / f (6.58). M_cr : ${Mcr.origine === 'saisi' ? 'saisi' : 'HORS NORME'}.`,
+    motif: `Méthode du §6.3.2.3, courbe ${courbe}, k_c = ${fr(kc, 3)}, chi_LT,mod = chi_LT / f (6.58). M_cr : ${Mcr.origine === 'saisi' ? 'saisi' : 'HORS NORME'}.`,
     methode,
     M_cr: Mcr,
     lambda_LT,

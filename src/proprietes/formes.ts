@@ -25,8 +25,8 @@ export type ProfilNonSymetrique = Extract<Profil, { type: 'L' | 'U' | '2L' | '2U
  * l'arc ne peut pas etre tangent aux deux faces au-dela.
  */
 export function contourL(c: ProfilL): Point[] {
-  for (const [v, n] of [[c.h, 'h'], [c.b, 'b'], [c.t, 't']] as const) exigerPositif(v, `La dimension ${n} de la corniere`, 'mm');
-  if (c.t + c.r1 >= Math.min(c.h, c.b)) throw new Error('Epaisseur et conge depassent les ailes de la corniere (mm).');
+  for (const [v, n] of [[c.h, 'h'], [c.b, 'b'], [c.t, 't']] as const) exigerPositif(v, `La dimension ${n} de la cornière`, 'mm');
+  if (c.t + c.r1 >= Math.min(c.h, c.b)) throw new Error('Épaisseur et congé dépassent les ailes de la cornière (mm).');
   const r2 = Math.min(c.r2, c.t);
   const s: Sommet[] = [
     { y: 0, z: 0 },
@@ -47,8 +47,8 @@ export function contourL(c: ProfilL): Point[] {
 export function contourU(u: ProfilU): Point[] {
   for (const [v, n] of [[u.h, 'h'], [u.b, 'b'], [u.tw, 't_w'], [u.tf, 't_f']] as const) exigerPositif(v, `La dimension ${n} du profil en U`, 'mm');
   const ep = (y: number): number => u.tf + u.pente * (u.yTf - y);
-  if (2 * ep(u.tw) + 2 * u.r1 >= u.h) throw new Error('Ailes et conges depassent la hauteur du profil en U (mm).');
-  if (u.tw + u.r1 >= u.b) throw new Error('Ame et conge depassent la largeur du profil en U (mm).');
+  if (2 * ep(u.tw) + 2 * u.r1 >= u.h) throw new Error('Ailes et congés dépassent la hauteur du profil en U (mm).');
+  if (u.tw + u.r1 >= u.b) throw new Error('Âme et congé dépassent la largeur du profil en U (mm).');
   const h2 = u.h / 2;
   const s: Sommet[] = [
     { y: 0, z: -h2 },
@@ -76,12 +76,12 @@ export function contours(p: ProfilNonSymetrique): Point[][] {
     case 'U':
       return [contourU(p)];
     case '2L': {
-      exigerPositifOuNul(p.ecartement, 'L ecartement des cornieres', 'mm');
+      exigerPositifOuNul(p.ecartement, "L'écartement des cornières", 'mm');
       const droite = deplacer(contourL(corniereOrientee(p.corniere, p.accolee)), p.ecartement / 2, 0);
       return [droite, symetriqueY(droite)];
     }
     case '2U': {
-      exigerPositifOuNul(p.ecartement, 'L ecartement des profils en U', 'mm');
+      exigerPositifOuNul(p.ecartement, "L'écartement des profils en U", 'mm');
       const droite = deplacer(contourU(p.profilU), p.ecartement / 2, 0);
       return [droite, symetriqueY(droite)];
     }
@@ -111,7 +111,7 @@ export interface Torsion {
   origine: string;
 }
 
-const SOURCE_PRODUCTEUR = 'valeur publiee par le producteur (catalogue)';
+const SOURCE_PRODUCTEUR = 'valeur publiée par le producteur (catalogue)';
 
 /**
  * I_t, I_w et centre de cisaillement.
@@ -143,7 +143,7 @@ export function torsion(p: ProfilNonSymetrique, IyCentre: number): Torsion {
     }
     case 'U': {
       if (p.It === undefined || p.Iw === undefined) {
-        throw new Error(`Profil en U « ${p.nom} » : I_t et I_w publies requis (aucune expression fermee fiable pour un U).`);
+        throw new Error(`Profil en U « ${p.nom} » : I_t et I_w publiés requis (aucune expression fermée fiable pour un U).`);
       }
       const e0 = p.e0 ?? excentriciteCisaillementU(p, IyCentre);
       return {
@@ -151,18 +151,18 @@ export function torsion(p: ProfilNonSymetrique, IyCentre: number): Torsion {
         Iw: p.Iw,
         yC: p.tw / 2 - e0,
         zC: 0,
-        origine: `I_t, I_w : ${SOURCE_PRODUCTEUR} ; centre de cisaillement : ${p.e0 !== undefined ? SOURCE_PRODUCTEUR : 'theorie des parois minces'}`,
+        origine: `I_t, I_w : ${SOURCE_PRODUCTEUR} ; centre de cisaillement : ${p.e0 !== undefined ? SOURCE_PRODUCTEUR : 'théorie des parois minces'}`,
       };
     }
     case '2L': {
       const c = corniereOrientee(p.corniere, p.accolee);
       const t1 = torsion(c, 0);
-      return { It: 2 * t1.It, Iw: 2 * t1.Iw, yC: 0, zC: c.t / 2, origine: `somme des deux cornieres (${t1.origine})` };
+      return { It: 2 * t1.It, Iw: 2 * t1.Iw, yC: 0, zC: c.t / 2, origine: `somme des deux cornières (${t1.origine})` };
     }
     case '2U': {
       const g = integrales([contourU(p.profilU)]);
       const t1 = torsion(p.profilU, g.Iy);
-      return { It: 2 * t1.It, Iw: 2 * t1.Iw, yC: 0, zC: 0, origine: `somme des deux profils, gauchissement d ensemble non compte (${t1.origine})` };
+      return { It: 2 * t1.It, Iw: 2 * t1.Iw, yC: 0, zC: 0, origine: `somme des deux profils, gauchissement d'ensemble non compté (${t1.origine})` };
     }
   }
 }

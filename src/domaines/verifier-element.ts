@@ -54,6 +54,13 @@ export interface Verification {
   motif: string;
 }
 
+/**
+ * Noms des verifications tels qu'ils s'affichent dans le verdict. `nom` reste
+ * une cle technique stable (« Deversement », reprise par les appelants) ; seul
+ * le texte visible recoit son accent.
+ */
+const NOM_VERDICT: Record<string, string> = { Deversement: 'déversement' };
+
 export interface ResultatElement {
   verdict: 'conforme' | 'non-conforme';
   motif: string;
@@ -78,7 +85,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
   // ((6.36) a (6.40), M_cr des I, flambement par flexion seul). Une corniere
   // ou un U n'y passe pas, plutot que d'y recevoir un resultat faux.
   if (!estDoublementSymetrique(d.profil)) {
-    throw new Error(`Profil « ${d.profil.nom} » (${d.profil.type}) : employer verifierNonSymetrique pour les cornieres, U, 2L et 2U.`);
+    throw new Error(`Profil « ${d.profil.nom} » (${d.profil.type}) : employer verifierNonSymetrique pour les cornières, U, 2L, 2U.`);
   }
   const p = d.profil;
   const prop = proprietes(p);
@@ -102,7 +109,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
   verifs.push({ nom: 'Cisaillement selon z', clause: '§6.2.6', applicable: d.Vz !== 0, taux: d.Vz === 0 ? null : Math.abs(d.Vz) / res.Vz_Rd, motif: d.Vz === 0 ? 'Aucun effort tranchant selon z.' : `V_pl,z,Rd = ${fr(res.Vz_Rd, 0)} kN` });
   verifs.push({ nom: 'Cisaillement selon y', clause: '§6.2.6', applicable: d.Vy !== 0, taux: d.Vy === 0 ? null : Math.abs(d.Vy) / res.Vy_Rd, motif: d.Vy === 0 ? 'Aucun effort tranchant selon y.' : `V_pl,y,Rd = ${fr(res.Vy_Rd, 0)} kN` });
   const avecMoment = d.My !== 0 || d.Mz !== 0;
-  verifs.push({ nom: 'Flexion composee de section', clause: '§6.2.8, §6.2.9', applicable: avecMoment, taux: avecMoment ? inter.taux : null, motif: avecMoment ? inter.motif : 'Aucun moment.' });
+  verifs.push({ nom: 'Flexion composée de section', clause: '§6.2.8, §6.2.9', applicable: avecMoment, taux: avecMoment ? inter.taux : null, motif: avecMoment ? inter.motif : 'Aucun moment.' });
 
   // Flambement : seulement en compression.
   const comprime = d.N > 0;
@@ -113,7 +120,7 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
     if (f === null) continue;
     verifs.push({ nom: `Flambement par flexion autour de ${f.axe}`, clause: '§6.3.1', applicable: true, taux: d.N / f.Nb_Rd, motif: `courbe ${f.courbe}, lambda = ${fr(f.lambda_, 3)}, chi = ${fr(f.chi, 3)}` });
   }
-  if (!comprime) verifs.push({ nom: 'Flambement par flexion', clause: '§6.3.1', applicable: false, taux: null, motif: 'Element non comprime.' });
+  if (!comprime) verifs.push({ nom: 'Flambement par flexion', clause: '§6.3.1', applicable: false, taux: null, motif: 'Élément non comprimé.' });
 
   const Wy = eff !== null ? eff.Weff_y : res.module === 'plastique' ? prop.Wpl_y : prop.Wel_y;
   const dev =
@@ -152,17 +159,17 @@ export function verifierElement(d: DonneesElement, profil: ProfilEc3): ResultatE
       },
       profil
     );
-    verifs.push({ nom: 'Flexion composee, expression (6.61)', clause: '§6.3.3', applicable: true, taux: i633.taux61, motif: i633.motif });
-    verifs.push({ nom: 'Flexion composee, expression (6.62)', clause: '§6.3.3', applicable: true, taux: i633.taux62, motif: i633.motif });
+    verifs.push({ nom: 'Flexion composée, expression (6.61)', clause: '§6.3.3', applicable: true, taux: i633.taux61, motif: i633.motif });
+    verifs.push({ nom: 'Flexion composée, expression (6.62)', clause: '§6.3.3', applicable: true, taux: i633.taux62, motif: i633.motif });
   } else {
-    verifs.push({ nom: 'Flexion composee avec instabilite', clause: '§6.3.3', applicable: false, taux: null, motif: comprime ? 'Aucun moment.' : 'Element non comprime.' });
+    verifs.push({ nom: 'Flexion composée avec instabilité', clause: '§6.3.3', applicable: false, taux: null, motif: comprime ? 'Aucun moment.' : 'Élément non comprimé.' });
   }
 
   const tauxMax = Math.max(...verifs.filter((v) => v.taux !== null).map((v) => v.taux as number), 0);
   const gouv = verifs.filter((v) => v.taux !== null).reduce<Verification | null>((a, v) => (a === null || (v.taux as number) > (a.taux as number) ? v : a), null);
   return {
     verdict: tauxMax <= 1 ? 'conforme' : 'non-conforme',
-    motif: gouv === null ? 'Aucune sollicitation.' : `Taux maximal ${fr(tauxMax, 3)} : ${gouv.nom.toLowerCase()} (${gouv.clause}).`,
+    motif: gouv === null ? 'Aucune sollicitation.' : `Taux maximal ${fr(tauxMax, 3)} : ${NOM_VERDICT[gouv.nom] ?? gouv.nom.toLowerCase()} (${gouv.clause}).`,
     proprietes: prop,
     materiau: mat,
     classification,

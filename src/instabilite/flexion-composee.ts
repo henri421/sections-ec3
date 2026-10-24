@@ -51,9 +51,9 @@ export type DiagrammeCm = DiagrammeLT | DiagrammeMixte;
  */
 export function coefficientCmMixte(d: DiagrammeMixte): number {
   const { Mh, Ms, psi } = d;
-  if (!Number.isFinite(psi) || psi < -1 || psi > 1) throw new Error('psi doit etre compris entre -1 et 1 (-).');
-  if (!Number.isFinite(Mh) || !Number.isFinite(Ms)) throw new Error('M_h et M_s doivent etre des nombres (kN.m).');
-  if (Mh === 0 && Ms === 0) throw new Error('Diagramme mixte nul : M_h et M_s ne peuvent pas etre tous deux nuls.');
+  if (!Number.isFinite(psi) || psi < -1 || psi > 1) throw new Error('psi doit être compris entre -1 et 1 (-).');
+  if (!Number.isFinite(Mh) || !Number.isFinite(Ms)) throw new Error('M_h et M_s doivent être des nombres (kN.m).');
+  if (Mh === 0 && Ms === 0) throw new Error('Diagramme mixte nul : M_h et M_s ne peuvent pas être tous deux nuls.');
   const repartie = d.charge === 'repartie';
 
   if (Math.abs(Ms) <= Math.abs(Mh)) {
@@ -84,7 +84,7 @@ export function coefficientCmDiagramme(d: DiagrammeCm): number {
   if (d.type === 'mixte') return coefficientCmMixte(d);
   if (d.type === 'repartie') return 0.95;
   if (d.type === 'concentree-milieu') return 0.9;
-  if (!Number.isFinite(d.psi) || d.psi < -1 || d.psi > 1) throw new Error('psi doit etre compris entre -1 et 1 (-).');
+  if (!Number.isFinite(d.psi) || d.psi < -1 || d.psi > 1) throw new Error('psi doit être compris entre -1 et 1 (-).');
   return coefficientCm(d.psi);
 }
 
@@ -133,7 +133,7 @@ export interface Interaction633 {
 export function interaction633(e: EntreesInteraction, profil: ProfilEc3): Interaction633 {
   const annexe = profil.annexe633.valeur;
   if (annexe === 'A') {
-    throw new Error('Annexe A (methode 1) du §6.3.3 : non implementee dans cette version. Choisir l annexe B dans le profil normatif.');
+    throw new Error("Annexe A (méthode 1) du §6.3.3 : non implémentée dans cette version. Choisir l'annexe B dans le profil normatif.");
   }
   const nY = e.NEd / (e.chi_y * e.NRd1);
   const nZ = e.NEd / (e.chi_z * e.NRd1);
@@ -176,6 +176,6 @@ export function interaction633(e: EntreesInteraction, profil: ProfilEc3): Intera
     kzz,
     taux61,
     taux62,
-    motif: `Annexe B (${e.sensibleTorsion ? 'tableau B.2, element sensible a la torsion' : 'tableau B.1'}), classe ${e.classe} ; C_my = ${fr(e.Cmy, 3)}, C_mz = ${fr(e.Cmz, 3)}${e.sensibleTorsion ? `, C_mLT = ${fr(e.CmLT, 3)}` : ''}${e.horsDomaine ? ` ; ${e.horsDomaine}` : ''}`,
+    motif: `Annexe B (${e.sensibleTorsion ? 'tableau B.2, élément sensible à la torsion' : 'tableau B.1'}), classe ${e.classe} ; C_my = ${fr(e.Cmy, 3)}, C_mz = ${fr(e.Cmz, 3)}${e.sensibleTorsion ? `, C_mLT = ${fr(e.CmLT, 3)}` : ''}${e.horsDomaine ? ` ; ${e.horsDomaine}` : ''}`,
   };
 }

@@ -128,7 +128,7 @@ function retraits(p: ProfilNonSymetrique, eps: number): { parois: ParoiEfficace[
     case 'U':
       return retraitsU(p, eps);
     case '2L': {
-      const r = retraitsL(corniereOrientee(p.corniere, p.accolee), eps, 'corniere, ');
+      const r = retraitsL(corniereOrientee(p.corniere, p.accolee), eps, 'cornière, ');
       const droite = r.retraits.map((x) => deplacer(x, p.ecartement / 2, 0));
       return { parois: r.parois, retraits: [...droite, ...droite.map(symetriqueY)] };
     }
@@ -170,7 +170,7 @@ export function sectionEfficace(p: ProfilNonSymetrique, m: Materiau): SectionEff
     parois: r.parois,
     motif:
       reduites.length === 0
-        ? 'toutes les parois sont entierement efficaces (lambda_p sous le seuil)'
-        : `parois reduites (compression uniforme, EN 1993-1-5 §4.4) : ${reduites.map((x) => `${x.paroi} rho = ${fr(x.rho, 3)}`).join(' ; ')} ; A_eff / A = ${fr(g.A / gB.A, 3)}`,
+        ? 'toutes les parois sont entièrement efficaces (lambda_p sous le seuil)'
+        : `parois réduites (compression uniforme, EN 1993-1-5 §4.4) : ${reduites.map((x) => `${x.paroi} rho = ${fr(x.rho, 3)}`).join(' ; ')} ; A_eff / A = ${fr(g.A / gB.A, 3)}`,
   };
 }

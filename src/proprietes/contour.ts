@@ -116,7 +116,7 @@ function brutes(polys: readonly (readonly Point[])[]): { A: number; Sy: number; 
 
 export function integrales(polys: readonly (readonly Point[])[]): Integrales {
   const b = brutes(polys);
-  if (!(b.A > 0)) throw new Error('Contour d aire nulle ou parcouru dans le mauvais sens.');
+  if (!(b.A > 0)) throw new Error("Contour d'aire nulle ou parcouru dans le mauvais sens.");
   const yG = b.Sy / b.A;
   const zG = b.Sz / b.A;
   return { A: b.A, yG, zG, Iy: b.Iyy - b.A * zG * zG, Iz: b.Izz - b.A * yG * yG, Iyz: b.Iyz - b.A * yG * zG };

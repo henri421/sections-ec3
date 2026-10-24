@@ -40,7 +40,7 @@ import './style.css';
 
 function exige<T extends Element>(selecteur: string): T {
   const trouve = document.querySelector(selecteur);
-  if (trouve === null) throw new Error(`element absent de la page : ${selecteur}`);
+  if (trouve === null) throw new Error(`élément absent de la page : ${selecteur}`);
   return trouve as T;
 }
 

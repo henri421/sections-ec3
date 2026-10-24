@@ -85,17 +85,17 @@ export function deversementNonSymetrique(
   McrSaisi: number | null,
   profil: ProfilEc3
 ): DeversementNonSymetrique {
-  if (MfortEd === 0) return sansObjet('Aucun moment autour de l axe fort.');
-  if (maintenu) return sansObjet('Membrure comprimee maintenue lateralement en continu : deversement empeche.');
+  if (MfortEd === 0) return sansObjet("Aucun moment autour de l'axe fort.");
+  if (maintenu) return sansObjet('Membrure comprimée maintenue latéralement en continu : déversement empêché.');
   if ((p.type === '2L' || p.type === '2U') && prop.Iy < prop.Iz) {
-    return sansObjet('Flexion autour de y, axe faible de la section composee : pas de deversement.');
+    return sansObjet('Flexion autour de y, axe faible de la section composée : pas de déversement.');
   }
   let Mcr: MomentCritique;
   if (McrSaisi !== null) {
     exigerPositif(McrSaisi, 'Le moment critique saisi M_cr', 'kN.m');
-    Mcr = { M_cr: McrSaisi, origine: 'saisi', source: 'saisi par l utilisateur (calcul exterieur)', C1: null, C2: null, z_g: null };
+    Mcr = { M_cr: McrSaisi, origine: 'saisi', source: "saisi par l'utilisateur (calcul extérieur)", C1: null, C2: null, z_g: null };
   } else if (p.type === 'L' || p.type === '2L') {
-    return sansObjet('Corniere flechie autour de son axe fort : M_cr a fournir (aucune expression fiable dans ce perimetre). Deversement NON VERIFIE.', true);
+    return sansObjet("Cornière fléchie autour de son axe fort : M_cr a fournir (aucune expression fiable dans ce périmètre). Déversement NON VÉRIFIÉ.", true);
   } else {
     exigerPositif(L, 'La longueur entre maintiens lateraux L', 'mm');
     const u = p.type === 'U' ? p : p.profilU;
@@ -109,11 +109,11 @@ export function deversementNonSymetrique(
   const W = moduleFort(p, prop, classe, eff);
   const lambda_LT = Math.sqrt((W * m.fy) / (Mcr.M_cr * NMM_PAR_KNM));
   const l0 = LAMBDA_LT0_GENERALE;
-  const torsionU = p.type === 'U' ? ' Charge supposee appliquee au centre de cisaillement : la torsion d une charge dans le plan de l ame n est pas traitee.' : '';
+  const torsionU = p.type === 'U' ? " Charge supposée appliquée au centre de cisaillement : la torsion d'une charge dans le plan de l'âme n'est pas traitée." : '';
   if (lambda_LT <= l0 || Math.abs(MfortEd) / Mcr.M_cr <= l0 * l0) {
     return {
       ...sansObjet(
-        `${lambda_LT <= l0 ? `lambda_LT = ${fr(lambda_LT, 3)} <= ${fr(l0, 1)}` : `M_Ed / M_cr = ${fr(Math.abs(MfortEd) / Mcr.M_cr, 3)} <= ${fr(l0 * l0, 2)}`} : deversement negligeable (§6.3.2.2(4)).${torsionU}`
+        `${lambda_LT <= l0 ? `lambda_LT = ${fr(lambda_LT, 3)} <= ${fr(l0, 1)}` : `M_Ed / M_cr = ${fr(Math.abs(MfortEd) / Mcr.M_cr, 3)} <= ${fr(l0 * l0, 2)}`} : déversement négligeable (§6.3.2.2(4)).${torsionU}`
       ),
       M_cr: Mcr,
       lambda_LT,
@@ -125,7 +125,7 @@ export function deversementNonSymetrique(
   return {
     applicable: true,
     aFournir: false,
-    motif: `Methode generale §6.3.2.2, courbe ${COURBE}. M_cr : ${Mcr.origine === 'saisi' ? 'saisi' : 'HORS NORME'}.${torsionU}`,
+    motif: `Méthode générale §6.3.2.2, courbe ${COURBE}. M_cr : ${Mcr.origine === 'saisi' ? 'saisi' : 'HORS NORME'}.${torsionU}`,
     M_cr: Mcr,
     lambda_LT,
     courbe: COURBE,

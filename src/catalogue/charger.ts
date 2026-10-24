@@ -60,14 +60,14 @@ function trouver(nom: string): { f: FamilleBrute; v: Record<string, number> } {
 /** Profil en I lamine du catalogue par son nom (« IPE 300 »). Leve s'il est absent ou d'une autre forme. */
 export function profilCatalogue(nom: string): Profil & { type: 'I-lamine' } {
   const { f, v } = trouver(nom);
-  if (f.type !== 'I-lamine') throw new Error(`Profil « ${nom} » : ce n est pas un profil en I (famille ${f.famille}).`);
+  if (f.type !== 'I-lamine') throw new Error(`Profil « ${nom} » : ce n'est pas un profil en I (famille ${f.famille}).`);
   return { type: 'I-lamine', nom, h: v.h, b: v.b, tw: v.tw, tf: v.tf, r: v.r };
 }
 
 /** Corniere du catalogue (« L 100x100x10 »), I_t publie compris. */
 export function corniereCatalogue(nom: string): ProfilL {
   const { f, v } = trouver(nom);
-  if (f.type !== 'L') throw new Error(`Profil « ${nom} » : ce n est pas une corniere (famille ${f.famille}).`);
+  if (f.type !== 'L') throw new Error(`Profil « ${nom} » : ce n'est pas une cornière (famille ${f.famille}).`);
   return { type: 'L', nom, h: v.h, b: v.b, t: v.t, r1: v.r1, r2: v.r2, It: v.It_cm4 * MM4_PAR_CM4 };
 }
 
@@ -82,7 +82,7 @@ export function corniereCatalogue(nom: string): ProfilL {
  */
 export function profilUCatalogue(nom: string): ProfilU {
   const { f, v } = trouver(nom);
-  if (f.type !== 'U') throw new Error(`Profil « ${nom} » : ce n est pas un profil en U (famille ${f.famille}).`);
+  if (f.type !== 'U') throw new Error(`Profil « ${nom} » : ce n'est pas un profil en U (famille ${f.famille}).`);
   const It = v.It_cm4 * MM4_PAR_CM4;
   const Iw = v.Iw_cm6 * MM6_PAR_CM6;
   const e0 = v.e0_cm * MM_PAR_CM;

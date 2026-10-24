@@ -63,7 +63,7 @@ export interface Proprietes {
 type ProprietesBase = Omit<Proprietes, 'yG' | 'zG' | 'Iyz' | 'alpha' | 'Iu' | 'Iv' | 'iu' | 'iv' | 'Wel_u' | 'Wel_v' | 'Wpl_u' | 'Wpl_v' | 'y0' | 'z0' | 'origineTorsion'>;
 
 const ORIGINE_TORSION: Record<ProfilDoublementSymetrique['type'], string> = {
-  'I-lamine': 'I_t : formule des catalogues de profils lamines (conges compris) ; I_w : semelles seules',
+  'I-lamine': 'I_t : formule des catalogues de profils laminés (congés compris) ; I_w : semelles seules',
   'I-soude': 'I_t : parois minces ; I_w : semelles seules',
   'tube-rectangulaire': 'I_t : EN 10210-2 annexe B ; I_w nul',
   'tube-circulaire': 'I_t = 2 I ; I_w nul',
@@ -156,9 +156,9 @@ export function rayonsTube(t: number, finition: 'chaud' | 'froid'): { ro: number
 
 function symetriques(p: ProfilDoublementSymetrique): ProprietesBase {
   if (p.type === 'tube-circulaire') {
-    exigerPositif(p.d, 'Le diametre d', 'mm');
-    exigerPositif(p.t, 'L epaisseur t', 'mm');
-    if (2 * p.t >= p.d) throw new Error('L epaisseur depasse le rayon du tube (mm).');
+    exigerPositif(p.d, 'Le diamètre d', 'mm');
+    exigerPositif(p.t, "L'épaisseur t", 'mm');
+    if (2 * p.t >= p.d) throw new Error("L'épaisseur dépasse le rayon du tube (mm).");
     const di = p.d - 2 * p.t;
     const A = (Math.PI * (p.d ** 2 - di ** 2)) / 4;
     const I = (Math.PI * (p.d ** 4 - di ** 4)) / 64;
@@ -169,7 +169,7 @@ function symetriques(p: ProfilDoublementSymetrique): ProprietesBase {
 
   if (p.type === 'tube-rectangulaire') {
     for (const [v, n] of [[p.h, 'h'], [p.b, 'b'], [p.t, 't']] as const) exigerPositif(v, `La dimension ${n}`, 'mm');
-    if (2 * p.t >= Math.min(p.h, p.b)) throw new Error('L epaisseur depasse la demi-dimension du tube (mm).');
+    if (2 * p.t >= Math.min(p.h, p.b)) throw new Error("L'épaisseur dépasse la demi-dimension du tube (mm).");
     const { ro, ri } = rayonsTube(p.t, p.finition);
     const hi = p.h - 2 * p.t;
     const bi = p.b - 2 * p.t;
@@ -202,8 +202,8 @@ function symetriques(p: ProfilDoublementSymetrique): ProprietesBase {
   // Profils en I doublement symetriques.
   for (const [v, n] of [[p.h, 'h'], [p.b, 'b'], [p.tw, 't_w'], [p.tf, 't_f']] as const) exigerPositif(v, `La dimension ${n}`, 'mm');
   const r = p.type === 'I-lamine' ? p.r : 0;
-  if (2 * p.tf + 2 * r >= p.h) throw new Error('Semelles et conges depassent la hauteur du profil (mm).');
-  if (p.tw + 2 * r >= p.b) throw new Error('Ame et conges depassent la largeur du profil (mm).');
+  if (2 * p.tf + 2 * r >= p.h) throw new Error('Semelles et congés dépassent la hauteur du profil (mm).');
+  if (p.tw + 2 * r >= p.b) throw new Error('Âme et congés dépassent la largeur du profil (mm).');
   const interieur = p.h / 2 - p.tf;
   const wy = (z: number): number => {
     const a = Math.abs(z);

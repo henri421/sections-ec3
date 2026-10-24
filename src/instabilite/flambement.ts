@@ -30,7 +30,7 @@ export function courbeFlambement(p: ProfilDoublementSymetrique, m: Materiau, axe
     if (hb > 1.2) {
       if (p.tf <= 40) return axe === 'y' ? (s460 ? 'a0' : 'a') : s460 ? 'a0' : 'b';
       if (p.tf <= 100) return axe === 'y' ? (s460 ? 'a' : 'b') : s460 ? 'a' : 'c';
-      throw new Error('Tableau 6.2 : profil lamine h/b > 1,2 avec t_f > 100 mm non couvert.');
+      throw new Error('Tableau 6.2 : profil laminé h/b > 1,2 avec t_f > 100 mm non couvert.');
     }
     if (p.tf <= 100) return axe === 'y' ? (s460 ? 'a' : 'b') : s460 ? 'a' : 'c';
     return axe === 'y' ? (s460 ? 'c' : 'd') : s460 ? 'c' : 'd';
