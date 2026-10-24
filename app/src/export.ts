@@ -37,11 +37,6 @@ export interface NoteDeCalcul {
   hypotheses: string[];
 }
 
-const AIDE_AU_CALCUL =
-  "Outil d'aide au calcul. Cet outil constate, il ne prescrit pas : il rend des résistances et des " +
-  "taux de travail, jamais un choix de profil. La vérification finale et la responsabilité incombent à " +
-  "l'ingénieur du projet. Cette note est un compte rendu, pas une justification réglementaire signée.";
-
 const STYLE_NOTE = `
   body { margin: 0; padding: 24px 28px; background: var(--surface); color: var(--texte); font: 14px/1.5 var(--sans); }
   h1 { font-size: 1.1rem; font-weight: normal; letter-spacing: .02em; margin: 0 0 .2rem; }
@@ -118,6 +113,5 @@ ${avertissements}
 <h2>Profil</h2>${dessins}
 <h2>Vérifications</h2>${note.resultats.map(tableDuBloc).join('')}
 ${hypotheses}
-<p class="pied">${AIDE_AU_CALCUL}</p>
 </body></html>`;
 }
