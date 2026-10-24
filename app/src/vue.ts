@@ -3,9 +3,10 @@
  * Unites : mm, kN, kN.m, cm2/cm4/cm3 a l'affichage des proprietes.
  */
 
-import { echapper, nombreFr, tauxFr, type BlocResultat, type LigneResultat } from 'aedificium-ui';
+import { echapper, nombreFr, notationHtml, notationSvg, tauxFr, type BlocResultat, type LigneResultat } from 'aedificium-ui';
 import type { Profil, ProfilNonSymetrique, Proprietes, ResultatElement, ResultatNonSymetrique, Verification, Classification, Materiau, MomentCritique, SectionEfficaceSymetrique } from '../../src/index';
-import { contours, estDoublementSymetrique, proprietes, rayonsTube } from '../../src/index';
+import { contours, estDoublementSymetrique, proprietes, provenance, rayonsTube } from '../../src/index';
+import { profilGeneral, type ModeleSaisie } from './form';
 
 export function messageDErreur(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -44,7 +45,7 @@ function dessinContour(p: ProfilNonSymetrique): string {
   const points =
     `<circle class="point" cx="${X(gy)}" cy="${Y(gz)}" r="3"/><text class="axe-nom" x="${(Number(X(gy)) + 5).toFixed(1)}" y="${(Number(Y(gz)) - 5).toFixed(1)}">G</text>` +
     `<circle class="point-creux" cx="${X(sy)}" cy="${Y(sz)}" r="3.5"/><text class="axe-nom" x="${(Number(X(sy)) + 5).toFixed(1)}" y="${(Number(Y(sz)) + 13).toFixed(1)}">C</text>`;
-  return `<svg class="schema-profil" viewBox="0 0 ${T} ${T}" role="img" aria-label="Coupe du profil ${echapper(p.nom)}">${forme}${axe(0, 'y', 'axe')}${axe(Math.PI / 2, 'z', 'axe')}${principaux}${points}<text class="nom" x="${T / 2}" y="${T - 4}">${echapper(p.nom)}</text></svg>`;
+  return `<svg class="schema-profil" viewBox="0 0 ${T} ${T}" role="img" aria-label="Coupe du profil ${echapper(p.nom)}">${forme}${axe(0, 'y', 'axe')}${axe(Math.PI / 2, 'z', 'axe')}${principaux}${points}<text class="nom" x="${T / 2}" y="${T - 4}">${notationSvg(p.nom)}</text></svg>`;
 }
 
 /** Coupe du profil a l'echelle, conges et angles compris. */
@@ -95,7 +96,7 @@ export function dessinProfil(p: Profil): string {
     ].join(' ');
     forme = `<path class="acier" d="${d}"/>`;
   }
-  return `<svg class="schema-profil" viewBox="0 0 ${T} ${T}" role="img" aria-label="Coupe du profil ${echapper(p.nom)}">${forme}<line class="axe" x1="8" y1="${cy}" x2="${T - 8}" y2="${cy}"/><line class="axe" x1="${cx}" y1="8" x2="${cx}" y2="${T - 8}"/><text class="axe-nom" x="${T - 10}" y="${cy - 4}">y</text><text class="axe-nom" x="${cx + 4}" y="14">z</text><text class="nom" x="${cx}" y="${T - 4}">${echapper(p.nom)}</text></svg>`;
+  return `<svg class="schema-profil" viewBox="0 0 ${T} ${T}" role="img" aria-label="Coupe du profil ${echapper(p.nom)}">${forme}<line class="axe" x1="8" y1="${cy}" x2="${T - 8}" y2="${cy}"/><line class="axe" x1="${cx}" y1="8" x2="${cx}" y2="${T - 8}"/><text class="axe-nom" x="${T - 10}" y="${cy - 4}">y</text><text class="axe-nom" x="${cx + 4}" y="14">z</text><text class="nom" x="${cx}" y="${T - 4}">${notationSvg(p.nom)}</text></svg>`;
 }
 
 const L = (symbole: string, libelle: string, valeur: string): LigneResultat => ({ symbole, libelle, valeur });
@@ -175,7 +176,7 @@ export function blocs(r: ResultatElement): BlocResultat[] {
 
 export function tableHtml(lignes: readonly LigneResultat[]): string {
   return `<table class="grandeurs"><tbody>${lignes
-    .map((l) => `<tr><th>${echapper(l.symbole)}</th><td class="libelle">${echapper(l.libelle)}</td><td class="valeur">${echapper(l.valeur)}</td></tr>`)
+    .map((l) => `<tr><th>${notationHtml(l.symbole)}</th><td class="libelle">${notationHtml(l.libelle)}</td><td class="valeur">${notationHtml(l.valeur)}</td></tr>`)
     .join('')}</tbody></table>`;
 }
 
@@ -190,14 +191,14 @@ export function blocVerdict(r: { verdict: 'conforme' | 'non-conforme' | 'incompl
 }
 
 export function verdictHtml(r: { verdict: 'conforme' | 'non-conforme' | 'incomplet'; motif: string }): string {
-  return `<p class="verdict verdict-${r.verdict}">${LIBELLE_VERDICT[r.verdict]}</p><p class="motif">${echapper(r.motif)}</p>`;
+  return `<p class="verdict verdict-${r.verdict}">${notationHtml(LIBELLE_VERDICT[r.verdict])}</p><p class="motif">${notationHtml(r.motif)}</p>`;
 }
 
 /** Bandeau hors norme, affiche des que M_cr provient de l'expression bibliographique. */
 export function bandeauMcr(r: { deversement: { M_cr: MomentCritique | null } }): string {
   const m = r.deversement.M_cr;
   if (m === null || m.origine !== 'hors-norme') return '';
-  return `<p class="alerte">M<sub>cr</sub> = ${nombreFr(m.M_cr, 1)} kN.m est calcule par une expression HORS NORME (l'EN 1993-1-1 ne donne pas M<sub>cr</sub>) : ${echapper(m.source)}. Un M<sub>cr</sub> issu d'un calcul aux elements finis peut etre saisi.</p>`;
+  return `<p class="alerte">M<sub>cr</sub> = ${nombreFr(m.M_cr, 1)} kN.m est calcule par une expression HORS NORME (l'EN 1993-1-1 ne donne pas M<sub>cr</sub>) : ${notationHtml(m.source)}. Un M<sub>cr</sub> issu d'un calcul aux elements finis peut etre saisi.</p>`;
 }
 
 /** Proprietes propres aux profils non doublement symetriques. */
@@ -264,7 +265,7 @@ export function bandeauNonSymetrique(r: ResultatNonSymetrique): string {
   if (r.flambements.length > 0) items.push('N<sub>cr</sub> de torsion et de flexion-torsion : expression HORS NORME (theorie des parois minces).');
   if (r.interaction633?.motif.includes('ETENDUE')) items.push('§6.3.3 : annexe B ETENDUE hors de son domaine (section non doublement symetrique).');
   if (r.deversement.aFournir) items.push('Deversement NON VERIFIE : saisir M<sub>cr</sub>.');
-  for (const a of r.avertissements) items.push(echapper(a));
+  for (const a of r.avertissements) items.push(notationHtml(a));
   return items.length === 0 ? '' : `<p class="alerte">${items.join('<br/>')}</p>`;
 }
 
@@ -273,4 +274,44 @@ export function optionsCatalogue(listes: Array<{ famille: string; noms: string[]
   return listes
     .map((f) => `<optgroup label="${echapper(f.famille)}">${f.noms.map((n) => `<option value="${echapper(n)}">${echapper(n)}</option>`).join('')}</optgroup>`)
     .join('');
+}
+
+/** Le diagramme saisi, en clair, pour la note : l'ecran le montre, la note le dit. */
+function texteDiagramme(type: string, psi: number, Mh: number, Ms: number): string {
+  if (type === 'lineaire') return `lineaire, psi = ${psi}`;
+  if (type === 'repartie') return 'charge repartie, appuis simples';
+  if (type === 'concentree-milieu') return 'charge concentree a mi-portee';
+  return `mixte (${type === 'mixte-repartie' ? 'repartie' : 'concentree'}) : M_h = ${Mh} kN.m, psi = ${psi}, M_s = ${Ms} kN.m`;
+}
+
+/** Bloc « Donnees » de la note : les entrees telles que l'ecran les montre. */
+export function blocEntrees(m: ModeleSaisie): BlocResultat {
+  const p = profilGeneral(m);
+  return {
+    titre: 'Donnees',
+    lignes: [
+      { symbole: 'profil', libelle: provenance(p.nom), valeur: `${p.nom}, ${m.nuance}` },
+      { symbole: 'N, M_y, M_z', libelle: 'sollicitations de calcul', valeur: `${m.N} kN ; ${m.My} ; ${m.Mz} kN.m` },
+      { symbole: 'V_z, V_y', libelle: 'efforts tranchants', valeur: `${m.Vz} ; ${m.Vy} kN` },
+      { symbole: 'L_cr,y, L_cr,z, L', libelle: 'longueurs de flambement, entre maintiens', valeur: `${m.Lcry} ; ${m.Lcrz} ; ${m.LLT} m` },
+      { symbole: 'diagramme LT', libelle: 'deversement (C1, C2, C_mLT)', valeur: texteDiagramme(m.diagramme, m.psiLT, 0, 0) },
+      { symbole: 'diagramme M_y', libelle: 'C_my, tableau B.3', valeur: texteDiagramme(m.diagrammeY, m.psiY, m.MhY, m.MsY) },
+      { symbole: 'diagramme M_z', libelle: 'C_mz, tableau B.3', valeur: texteDiagramme(m.diagrammeZ, m.psiZ, m.MhZ, m.MsZ) },
+    ],
+    note: null,
+  };
+}
+
+/** Avertissements portes par la note, selon la forme du resultat. */
+export function avertissementsDeLaNote(
+  e: { forme: 'symetrique'; resultat: ResultatElement } | { forme: 'non-symetrique'; resultat: ResultatNonSymetrique }
+): string[] {
+  const m = e.resultat.deversement.M_cr;
+  const avertissements = m !== null && m.origine === 'hors-norme' ? [`M_cr calcule HORS NORME : ${m.source}.`] : [];
+  if (e.forme === 'non-symetrique') {
+    if (e.resultat.flambements.length > 0) avertissements.push('N_cr de torsion et de flexion-torsion calcule HORS NORME (theorie des parois minces).');
+    if (e.resultat.deversement.aFournir) avertissements.push('Deversement NON VERIFIE : M_cr a fournir.');
+    avertissements.push(...e.resultat.avertissements);
+  }
+  return avertissements;
 }

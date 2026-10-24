@@ -5,7 +5,7 @@
  * `aedificium-ui` (`telecharger`, `ouvrirOuTelecharger`).
  */
 
-import { JETONS, echapper, type BlocResultat } from 'aedificium-ui';
+import { JETONS, notationHtml, type BlocResultat } from 'aedificium-ui';
 
 /**
  * Styles du trace, jetons compris : un document exporte ne voit pas la
@@ -63,17 +63,35 @@ const STYLE_NOTE = `
   @media print { body { background: #fff; padding: 0; } h2 { page-break-after: avoid; } }
 `;
 
+/** Hypotheses et limites portees par la note, selon la forme du resultat. */
+export function hypothesesDeLaNote(forme: 'symetrique' | 'non-symetrique'): string[] {
+  return forme === 'symetrique'
+    ? [
+        'Proprietes recalculees a partir des dimensions nominales ; aucune classe stockee.',
+        'Semelles classees en compression uniforme, du cote de la securite.',
+        'Facteurs k_ij de l annexe B du §6.3.3 ; C_m pour des moments lineaires.',
+        'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
+      ]
+    : [
+        'Proprietes recalculees sur le contour ; I_t, I_w et centre de cisaillement des profils lamines repris du producteur.',
+        'Classe 4 : section efficace unique, toutes parois en compression uniforme (EN 1993-1-5 §4.4).',
+        'Interaction N-M de section par le critere lineaire (6.2), (6.44) en classe 4.',
+        'Annexe B du §6.3.3 etendue aux cornieres, U et 2L, hors de son domaine.',
+        'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
+      ];
+}
+
 function tableDuBloc(bloc: BlocResultat): string {
   const lignes = bloc.lignes
     .map(
       (l) =>
-        `<tr><td class="sym">${echapper(l.symbole)}</td><td class="lib">${echapper(l.libelle)}</td><td class="val">${echapper(l.valeur)}</td></tr>`
+        `<tr><td class="sym">${notationHtml(l.symbole)}</td><td class="lib">${notationHtml(l.libelle)}</td><td class="val">${notationHtml(l.valeur)}</td></tr>`
     )
     .join('');
   const table = lignes === '' ? '' : `<table>${lignes}</table>`;
   // Le motif est rendu MEME sans ligne : c'est le cas ou il porte toute l'information.
-  const note = bloc.note === null ? '' : `<p class="note">${echapper(bloc.note)}</p>`;
-  return `<h3>${echapper(bloc.titre)}</h3>${table}${note}`;
+  const note = bloc.note === null ? '' : `<p class="note">${notationHtml(bloc.note)}</p>`;
+  return `<h3>${notationHtml(bloc.titre)}</h3>${table}${note}`;
 }
 
 /**
@@ -82,19 +100,19 @@ function tableDuBloc(bloc: BlocResultat): string {
  * coefficient non applicable.
  */
 export function noteDeCalculHtml(note: NoteDeCalcul, styles: string): string {
-  const avertissements = note.avertissements.map((a) => `<p class="avertissement">${echapper(a)}</p>`).join('');
+  const avertissements = note.avertissements.map((a) => `<p class="avertissement">${notationHtml(a)}</p>`).join('');
   const dessins = note.dessins.map((svg) => `<div class="dessin">${svg}</div>`).join('');
   const hypotheses =
     note.hypotheses.length === 0
       ? ''
-      : `<h2>Hypotheses et limites</h2><ul>${note.hypotheses.map((h) => `<li>${echapper(h)}</li>`).join('')}</ul>`;
+      : `<h2>Hypotheses et limites</h2><ul>${note.hypotheses.map((h) => `<li>${notationHtml(h)}</li>`).join('')}</ul>`;
   return `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8" />
-<title>Note de calcul — ${echapper(note.titre)}</title>
+<title>Note de calcul — ${notationHtml(note.titre)}</title>
 <style>${styles}${STYLE_NOTE}</style></head>
 <body>
 <h1>Note de calcul — element en acier (EN 1993-1-1)</h1>
-<p class="date">${echapper(note.titre)} · ${echapper(note.date)} · profil : ${echapper(note.profil)}</p>
+<p class="date">${notationHtml(note.titre)} · ${notationHtml(note.date)} · profil : ${notationHtml(note.profil)}</p>
 ${avertissements}
 <h2>Donnees d entree</h2>${note.entrees.map(tableDuBloc).join('')}
 <h2>Profil</h2>${dessins}

@@ -4,8 +4,8 @@
  * `vue` et `export`, tous purs.
  */
 
-import { ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger, type BlocResultat } from 'aedificium-ui';
-import { ec3Recommande, familles, provenance, verifierElement, verifierNonSymetrique, type ResultatElement, type ResultatNonSymetrique } from '../../src/index';
+import { blocsEnTexte, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
+import { ec3Recommande, familles, verifierElement, verifierNonSymetrique, type ResultatElement, type ResultatNonSymetrique } from '../../src/index';
 import {
   champsDepuisModele,
   donneesDepuisModele,
@@ -17,8 +17,10 @@ import {
   type ModeleSaisie,
 } from './form';
 import {
+  avertissementsDeLaNote,
   bandeauMcr,
   bandeauNonSymetrique,
+  blocEntrees,
   blocs,
   blocsNonSymetriques,
   lignesInstabiliteNonSymetrique,
@@ -33,7 +35,7 @@ import {
   tableHtml,
   verdictHtml,
 } from './vue';
-import { STYLES_TRACE, noteDeCalculHtml } from './export';
+import { STYLES_TRACE, hypothesesDeLaNote, noteDeCalculHtml } from './export';
 import './style.css';
 
 function exige<T extends Element>(selecteur: string): T {
@@ -106,7 +108,7 @@ function ajusterLesGroupes(m: ModeleSaisie): void {
 }
 
 function montrer(el: HTMLElement, message: string | null): void {
-  el.textContent = message ?? '';
+  el.textContent = message === null ? '' : notationTexte(message);
   el.hidden = message === null;
 }
 
@@ -153,31 +155,6 @@ function rafraichir(): void {
   }
 }
 
-/** Le diagramme saisi, en clair, pour la note : l'ecran le montre, la note le dit. */
-function texteDiagramme(type: string, psi: number, Mh: number, Ms: number): string {
-  if (type === 'lineaire') return `lineaire, psi = ${psi}`;
-  if (type === 'repartie') return 'charge repartie, appuis simples';
-  if (type === 'concentree-milieu') return 'charge concentree a mi-portee';
-  return `mixte (${type === 'mixte-repartie' ? 'repartie' : 'concentree'}) : M_h = ${Mh} kN.m, psi = ${psi}, M_s = ${Ms} kN.m`;
-}
-
-function entrees(m: ModeleSaisie): BlocResultat {
-  const p = profilGeneral(m);
-  return {
-    titre: 'Donnees',
-    lignes: [
-      { symbole: 'profil', libelle: provenance(p.nom), valeur: `${p.nom}, ${m.nuance}` },
-      { symbole: 'N, M_y, M_z', libelle: 'sollicitations de calcul', valeur: `${m.N} kN ; ${m.My} ; ${m.Mz} kN.m` },
-      { symbole: 'V_z, V_y', libelle: 'efforts tranchants', valeur: `${m.Vz} ; ${m.Vy} kN` },
-      { symbole: 'L_cr,y, L_cr,z, L', libelle: 'longueurs de flambement, entre maintiens', valeur: `${m.Lcry} ; ${m.Lcrz} ; ${m.LLT} m` },
-      { symbole: 'diagramme LT', libelle: 'deversement (C1, C2, C_mLT)', valeur: texteDiagramme(m.diagramme, m.psiLT, 0, 0) },
-      { symbole: 'diagramme M_y', libelle: 'C_my, tableau B.3', valeur: texteDiagramme(m.diagrammeY, m.psiY, m.MhY, m.MsY) },
-      { symbole: 'diagramme M_z', libelle: 'C_mz, tableau B.3', valeur: texteDiagramme(m.diagrammeZ, m.psiZ, m.MhZ, m.MsZ) },
-    ],
-    note: null,
-  };
-}
-
 document.addEventListener('click', (ev) => {
   const cible = ev.target;
   if (!(cible instanceof HTMLElement)) return;
@@ -189,30 +166,10 @@ document.addEventListener('click', (ev) => {
   if (action === 'exporter-dessin') {
     telecharger(`${nom}.svg`, svgAutonome(e.dessin, STYLES_TRACE), 'image/svg+xml;charset=utf-8');
   } else if (action === 'exporter-resultats') {
-    telecharger(`${nom}-resultats.csv`, resultatsEnCsv([entrees(e.modele), ...resultats]), 'text/csv;charset=utf-8');
+    telecharger(`${nom}-resultats.csv`, resultatsEnCsv(blocsEnTexte([blocEntrees(e.modele), ...resultats])), 'text/csv;charset=utf-8');
   } else if (action === 'exporter-note') {
-    const m = e.resultat.deversement.M_cr;
-    const avertissements = m !== null && m.origine === 'hors-norme' ? [`M_cr calcule HORS NORME : ${m.source}.`] : [];
-    if (e.forme === 'non-symetrique') {
-      if (e.resultat.flambements.length > 0) avertissements.push('N_cr de torsion et de flexion-torsion calcule HORS NORME (theorie des parois minces).');
-      if (e.resultat.deversement.aFournir) avertissements.push('Deversement NON VERIFIE : M_cr a fournir.');
-      avertissements.push(...e.resultat.avertissements);
-    }
-    const hypotheses =
-      e.forme === 'symetrique'
-        ? [
-            'Proprietes recalculees a partir des dimensions nominales ; aucune classe stockee.',
-            'Semelles classees en compression uniforme, du cote de la securite.',
-            'Facteurs k_ij de l annexe B du §6.3.3 ; C_m pour des moments lineaires.',
-            'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
-          ]
-        : [
-            'Proprietes recalculees sur le contour ; I_t, I_w et centre de cisaillement des profils lamines repris du producteur.',
-            'Classe 4 : section efficace unique, toutes parois en compression uniforme (EN 1993-1-5 §4.4).',
-            'Interaction N-M de section par le critere lineaire (6.2), (6.44) en classe 4.',
-            'Annexe B du §6.3.3 etendue aux cornieres, U et 2L, hors de son domaine.',
-            'Valeurs recommandees de l EN 1993-1-1 ; aucune annexe nationale codee.',
-          ];
+    const avertissements = avertissementsDeLaNote(e);
+    const hypotheses = hypothesesDeLaNote(e.forme);
     ouvrirOuTelecharger(
       `${nom}-note.html`,
       noteDeCalculHtml(
@@ -220,7 +177,7 @@ document.addEventListener('click', (ev) => {
           titre: `${profilGeneral(e.modele).nom}, ${e.modele.nuance}`,
           date: new Date().toISOString().slice(0, 10),
           profil: `${PROFIL.nom} (${PROFIL.date})`,
-          entrees: [entrees(e.modele)],
+          entrees: [blocEntrees(e.modele)],
           dessins: [e.dessin],
           resultats,
           avertissements,
