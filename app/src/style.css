@@ -213,6 +213,11 @@ select {
   font: inherit;
 }
 
+/* Une liste aux options longues ne sort pas de son cadre. */
+select {
+  max-width: 60%;
+}
+
 input[type='text'] {
   width: 8.5rem;
   font-family: var(--mono);
@@ -293,6 +298,16 @@ input[type='text']:focus {
   font-size: 0.8rem;
   font-weight: normal;
   white-space: nowrap;
+}
+
+/* Sur un telephone, les intitules et valeurs longs (« Flambement par flexion autour de
+   y ») passent a la ligne plutot que d'elargir la page. */
+@media (max-width: 40rem) {
+  table.grandeurs th,
+  table.grandeurs td.valeur {
+    width: auto;
+    white-space: normal;
+  }
 }
 
 .grandeurs .libelle {
