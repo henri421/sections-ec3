@@ -189,8 +189,9 @@ document.addEventListener('click', (ev) => {
   }
 });
 
-// Listes des cornieres et des U, tirees du catalogue (trop longues pour le HTML).
-const parType = (t: 'L' | 'U') => familles().filter((f) => f.type === t);
+// Listes des profils en I, des cornieres et des U, tirees du catalogue (trop longues pour le HTML).
+const parType = (t: 'I-lamine' | 'L' | 'U') => familles().filter((f) => f.type === t);
+exige<HTMLSelectElement>('[data-champ="nom_catalogue"]').innerHTML = optionsCatalogue(parType('I-lamine'));
 exige<HTMLSelectElement>('[data-champ="nom_corniere"]').innerHTML = optionsCatalogue(parType('L'));
 exige<HTMLSelectElement>('[data-champ="nom_u"]').innerHTML = optionsCatalogue(parType('U'));
 

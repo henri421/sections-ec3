@@ -55,8 +55,8 @@ function grandeursL(p: Proprietes, publie: Record<string, number>, egales: boole
 }
 
 describe('catalogue des cornieres et profils en U', () => {
-  it('sept familles, chacune avec type, source et date', () => {
-    expect(familles().map((x) => `${x.famille}:${x.type}`)).toEqual(['IPE:I-lamine', 'HEA:I-lamine', 'HEB:I-lamine', 'L-egales:L', 'L-inegales:L', 'UPE:U', 'UPN:U']);
+  it('huit familles, chacune avec type, source et date', () => {
+    expect(familles().map((x) => `${x.famille}:${x.type}`)).toEqual(['IPE:I-lamine', 'HEA:I-lamine', 'HEB:I-lamine', 'HEM:I-lamine', 'L-egales:L', 'L-inegales:L', 'UPE:U', 'UPN:U']);
     for (const f of familles()) {
       expect(f.source.length).toBeGreaterThan(10);
       expect(f.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);

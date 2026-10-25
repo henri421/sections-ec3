@@ -21,9 +21,9 @@ function ecart(calcule: number, publie: number): number {
 }
 
 describe('catalogue', () => {
-  it('familles en I : IPE, HEA, HEB, chacune avec source et date', () => {
+  it('familles en I : IPE, HEA, HEB, HEM, chacune avec source et date', () => {
     const f = familles().filter((x) => x.type === 'I-lamine');
-    expect(f.map((x) => x.famille)).toEqual(['IPE', 'HEA', 'HEB']);
+    expect(f.map((x) => x.famille)).toEqual(['IPE', 'HEA', 'HEB', 'HEM']);
     for (const x of f) {
       expect(x.source.length).toBeGreaterThan(10);
       expect(x.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
