@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { NOMS_GRECS, blocsEnTexte, constatsAffichage, contenuBalise, resultatsEnCsv, texteVisible, type BlocResultat } from 'aedificium-ui';
+import { NOMS_GRECS, blocsEnTexte, constatsAffichage, contenuBalise, noteDeCalculHtml, resultatsEnCsv, texteVisible, type BlocResultat } from 'aedificium-ui';
 import { ec3Recommande, familles, verifierElement, verifierNonSymetrique } from '../../src/index';
 import {
   donneesDepuisModele,
@@ -18,7 +18,6 @@ import {
   type ModeleSaisie,
 } from '../../app/src/form';
 import {
-  avertissementsDeLaNote,
   bandeauMcr,
   bandeauNonSymetrique,
   blocEntrees,
@@ -29,7 +28,8 @@ import {
   tableHtml,
   verdictHtml,
 } from '../../app/src/vue';
-import { STYLES_TRACE, hypothesesDeLaNote, noteDeCalculHtml } from '../../app/src/export';
+import { STYLES_TRACE } from '../../app/src/export';
+import { noteDuCalcul } from '../../app/src/note';
 
 const P = ec3Recommande();
 const TITRE = 'Profils en acier';
@@ -46,27 +46,22 @@ function sorties() {
   const ecran: string[] = [];
   const notes: string[] = [];
   const csv: string[] = [];
-  const noter = (m: ModeleSaisie, dessin: string, resultats: BlocResultat[], avertissements: string[], hypotheses: string[]): void => {
-    const entrees = blocEntrees(m);
-    notes.push(
-      noteDeCalculHtml(
-        { titre: profilGeneral(m).nom, date: '2026-10-24', profil: P.nom, entrees: [entrees], dessins: [dessin], resultats, avertissements, hypotheses },
-        STYLES_TRACE
-      )
-    );
-    csv.push(resultatsEnCsv(blocsEnTexte([entrees, ...resultats])));
+  const noter = (m: ModeleSaisie, resultats: BlocResultat[]): void => {
+    csv.push(resultatsEnCsv(blocsEnTexte([blocEntrees(m), ...resultats])));
   };
   for (const m of SYMETRIQUES) {
     const r = verifierElement(donneesDepuisModele(m), P);
     const dessin = dessinProfil(profilDepuisModele(m));
     ecran.push(dessin, verdictHtml(r), bandeauMcr(r), ...blocs(r).map((b) => tableHtml(b.lignes)));
-    noter(m, dessin, blocs(r), avertissementsDeLaNote({ forme: 'symetrique', resultat: r }), hypothesesDeLaNote('symetrique'));
+    noter(m, blocs(r));
+    notes.push(noteDeCalculHtml(noteDuCalcul(P, { forme: 'symetrique', modele: m, resultat: r, dessin }, { projet: 'Halle', element: '', date: '2026-10-24' }), STYLES_TRACE));
   }
   for (const m of NON_SYMETRIQUES) {
     const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), P);
     const dessin = dessinProfil(profilGeneral(m));
     ecran.push(dessin, verdictHtml(r), bandeauNonSymetrique(r), ...blocsNonSymetriques(r).map((b) => tableHtml(b.lignes)));
-    noter(m, dessin, blocsNonSymetriques(r), avertissementsDeLaNote({ forme: 'non-symetrique', resultat: r }), hypothesesDeLaNote('non-symetrique'));
+    noter(m, blocsNonSymetriques(r));
+    notes.push(noteDeCalculHtml(noteDuCalcul(P, { forme: 'non-symetrique', modele: m, resultat: r, dessin }, { projet: 'Halle', element: '', date: '2026-10-24' }), STYLES_TRACE));
   }
   ecran.push(optionsCatalogue(familles()));
   return { ecran, notes, csv };
@@ -115,8 +110,7 @@ describe('main.ts passe par les fonctions testees', () => {
   it('entrees, avertissements et hypotheses de la note, CSV', () => {
     const main = lire('../../app/src/main.ts');
     expect(main).toContain('blocEntrees(');
-    expect(main).toContain('avertissementsDeLaNote(');
-    expect(main).toContain('hypothesesDeLaNote(');
+    expect(main).toContain('noteDuCalcul(');
     expect(main).toContain('blocsEnTexte(');
   });
 });
