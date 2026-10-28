@@ -4,8 +4,8 @@
  * `vue` et `export`, tous purs.
  */
 
-import { blocsEnTexte, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
-import { ec3Recommande, familles, verifierElement, verifierNonSymetrique, type ResultatElement, type ResultatNonSymetrique } from '../../src/index';
+import { blocsEnTexte, noteDeCalculHtml, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
+import { ec3Recommande, familles, verifierElement, verifierNonSymetrique } from '../../src/index';
 import {
   champsDepuisModele,
   donneesDepuisModele,
@@ -17,7 +17,6 @@ import {
   type ModeleSaisie,
 } from './form';
 import {
-  avertissementsDeLaNote,
   bandeauMcr,
   bandeauNonSymetrique,
   blocEntrees,
@@ -35,7 +34,8 @@ import {
   tableHtml,
   verdictHtml,
 } from './vue';
-import { STYLES_TRACE, hypothesesDeLaNote, noteDeCalculHtml } from './export';
+import { STYLES_TRACE } from './export';
+import { noteDuCalcul, type EtatNote } from './note';
 import './style.css';
 
 function exige<T extends Element>(selecteur: string): T {
@@ -112,11 +112,24 @@ function montrer(el: HTMLElement, message: string | null): void {
   el.hidden = message === null;
 }
 
-type Etat =
-  | { forme: 'symetrique'; modele: ModeleSaisie; resultat: ResultatElement; dessin: string }
-  | { forme: 'non-symetrique'; modele: ModeleSaisie; resultat: ResultatNonSymetrique; dessin: string };
+let etat: EtatNote | null = null;
 
-let etat: Etat | null = null;
+const CLE_CARTOUCHE = 'sections-ec3:cartouche';
+
+/** Cartouche enregistre : projet et element, chaines vides si absents ou illisibles. */
+function lireCartouche(): { projet: string; element: string } {
+  try {
+    const lu: unknown = JSON.parse(localStorage.getItem(CLE_CARTOUCHE) ?? '{}');
+    if (typeof lu !== 'object' || lu === null) return { projet: '', element: '' };
+    const o = lu as Record<string, unknown>;
+    return {
+      projet: typeof o.projet === 'string' ? o.projet : '',
+      element: typeof o.element === 'string' ? o.element : '',
+    };
+  } catch {
+    return { projet: '', element: '' };
+  }
+}
 
 function rafraichir(): void {
   const lecture = modeleDepuisChamps(valeursDesChamps());
@@ -168,21 +181,14 @@ document.addEventListener('click', (ev) => {
   } else if (action === 'exporter-resultats') {
     telecharger(`${nom}-resultats.csv`, resultatsEnCsv(blocsEnTexte([blocEntrees(e.modele), ...resultats])), 'text/csv;charset=utf-8');
   } else if (action === 'exporter-note') {
-    const avertissements = avertissementsDeLaNote(e);
-    const hypotheses = hypothesesDeLaNote(e.forme);
     ouvrirOuTelecharger(
       `${nom}-note.html`,
       noteDeCalculHtml(
-        {
-          titre: `${profilGeneral(e.modele).nom}, ${e.modele.nuance}`,
+        noteDuCalcul(PROFIL, e, {
+          projet: champProjet.value,
+          element: champElement.value,
           date: new Date().toISOString().slice(0, 10),
-          profil: `${PROFIL.nom} (${PROFIL.date})`,
-          entrees: [blocEntrees(e.modele)],
-          dessins: [e.dessin],
-          resultats,
-          avertissements,
-          hypotheses,
-        },
+        }),
         STYLES_TRACE
       )
     );
@@ -194,6 +200,19 @@ const parType = (t: 'I-lamine' | 'L' | 'U') => familles().filter((f) => f.type =
 exige<HTMLSelectElement>('[data-champ="nom_catalogue"]').innerHTML = optionsCatalogue(parType('I-lamine'));
 exige<HTMLSelectElement>('[data-champ="nom_corniere"]').innerHTML = optionsCatalogue(parType('L'));
 exige<HTMLSelectElement>('[data-champ="nom_u"]').innerHTML = optionsCatalogue(parType('U'));
+
+const champProjet = exige<HTMLInputElement>('[data-role="projet"]');
+const champElement = exige<HTMLInputElement>('[data-role="element"]');
+const cartouche = lireCartouche();
+champProjet.value = cartouche.projet;
+champElement.value = cartouche.element;
+exige<HTMLElement>('#sorties').addEventListener('input', () => {
+  try {
+    localStorage.setItem(CLE_CARTOUCHE, JSON.stringify({ projet: champProjet.value, element: champElement.value }));
+  } catch {
+    /* stockage indisponible : le cartouche reste valable pour la session */
+  }
+});
 
 ecrireModele(modeleParDefaut());
 formulaire.addEventListener('input', rafraichir);
