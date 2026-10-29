@@ -5,7 +5,8 @@
  * efforts en kN, moments en kN.m.
  */
 
-import { lireNombre } from 'aedificium-ui';
+import { langueCourante, lireNombre } from 'aedificium-ui';
+import { textes } from './textes';
 import type { DiagrammeCm, DonneesElement, DonneesNonSymetriques, Nuance, Profil, ProfilDoublementSymetrique } from '../../src/index';
 import { corniereCatalogue, estDoublementSymetrique, profilCatalogue, profilUCatalogue } from '../../src/index';
 
@@ -131,13 +132,13 @@ class ErreurDeSaisie extends Error {}
 function choix<T extends string>(v: Record<string, string>, nom: string, permis: readonly T[]): T {
   const x = v[nom];
   if ((permis as readonly string[]).includes(x)) return x as T;
-  throw new ErreurDeSaisie(`Valeur inattendue pour ${nom} : « ${x ?? ''} ».`);
+  throw new ErreurDeSaisie(textes().saisie.valeurInattendue(nom, x ?? ''));
 }
 
 function nombre(v: Record<string, string>, nom: string, requis: boolean, repli: number): number {
   const x = lireNombre(v[nom] ?? '');
   if (x === null) {
-    if (requis) throw new ErreurDeSaisie(`${nom} : nombre attendu.`);
+    if (requis) throw new ErreurDeSaisie(textes().saisie.nombreAttendu(nom));
     return repli;
   }
   return x;
@@ -154,7 +155,7 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
     const chs = source === 'tube-circulaire';
     const mcrTexte = (v.mcr ?? '').trim();
     const mcr = mcrTexte === '' ? null : lireNombre(mcrTexte);
-    if (mcrTexte !== '' && mcr === null) throw new ErreurDeSaisie('M_cr : nombre attendu, ou champ vide.');
+    if (mcrTexte !== '' && mcr === null) throw new ErreurDeSaisie(textes().saisie.mcr);
     const diagrammeY = choix(v, 'diagramme_y', DIAGRAMMES_CM);
     const diagrammeZ = choix(v, 'diagramme_z', DIAGRAMMES_CM);
     const mixteY = diagrammeY.startsWith('mixte');
@@ -211,7 +212,7 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
 }
 
 export function champsDepuisModele(m: ModeleSaisie): Record<string, string> {
-  const n = (x: number): string => String(x).replace('.', ',');
+  const n = (x: number): string => String(x).replace('.', langueCourante() === 'en' ? '.' : ',');
   return {
     source: m.source,
     nom_catalogue: m.nomCatalogue,
@@ -284,9 +285,9 @@ export function profilGeneral(m: ModeleSaisie): Profil {
     case 'U':
       return profilUCatalogue(m.nomU);
     case '2L':
-      return { type: '2L', nom: `2 ${m.nomCorniere} (gousset ${m.ecartement} mm)`, corniere: corniereCatalogue(m.nomCorniere), ecartement: m.ecartement, accolee: m.accolee };
+      return { type: '2L', nom: `2 ${m.nomCorniere} (${textes().gousset} ${m.ecartement} mm)`, corniere: corniereCatalogue(m.nomCorniere), ecartement: m.ecartement, accolee: m.accolee };
     case '2U':
-      return { type: '2U', nom: `2 ${m.nomU} (gousset ${m.ecartement} mm)`, profilU: profilUCatalogue(m.nomU), ecartement: m.ecartement };
+      return { type: '2U', nom: `2 ${m.nomU} (${textes().gousset} ${m.ecartement} mm)`, profilU: profilUCatalogue(m.nomU), ecartement: m.ecartement };
   }
 }
 

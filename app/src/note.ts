@@ -10,6 +10,7 @@ import type { ResultatElement, ResultatNonSymetrique, Verification } from '../..
 import type { ModeleSaisie } from './form';
 import { profilGeneral } from './form';
 import { avertissementsDeLaNote, blocEntrees, blocs, blocsNonSymetriques } from './vue';
+import { phrase, textes } from './textes';
 
 /** L'etat que la page garde du dernier calcul reussi. */
 export type EtatNote =
@@ -18,24 +19,10 @@ export type EtatNote =
 
 /** Hypotheses et limites portees par la note, selon la forme du resultat. */
 export function hypothesesDeLaNote(forme: 'symetrique' | 'non-symetrique'): string[] {
-  return forme === 'symetrique'
-    ? [
-        'Propriétés recalculées à partir des dimensions nominales ; aucune classe stockée.',
-        'Semelles classées en compression uniforme, du côté de la sécurité.',
-        "Facteurs k_ij de l'annexe B du §6.3.3 ; C_m pour des moments linéaires.",
-        "Valeurs recommandées de l'EN 1993-1-1 ; aucune annexe nationale codée.",
-      ]
-    : [
-        'Propriétés recalculées sur le contour ; I_t, I_w et centre de cisaillement des profils laminés repris du producteur.',
-        'Classe 4 : section efficace unique, toutes parois en compression uniforme (EN 1993-1-5 §4.4).',
-        'Interaction N-M de section par le critère linéaire (6.2), (6.44) en classe 4.',
-        'Annexe B du §6.3.3 étendue aux cornières, U et 2L, hors de son domaine.',
-        "Valeurs recommandées de l'EN 1993-1-1 ; aucune annexe nationale codée.",
-      ];
+  const t = textes().note;
+  return forme === 'symetrique' ? t.hypothesesSym : t.hypothesesNonSym;
 }
 
-/** Nom affiche d'une verification : la cle technique reste « Deversement ». */
-const NOM_VERIFICATION: Record<string, string> = { Deversement: 'Déversement' };
 
 /**
  * Une ligne par verification applicable. Le deversement a M_cr non fourni
@@ -45,12 +32,13 @@ const NOM_VERIFICATION: Record<string, string> = { Deversement: 'Déversement' }
 export function verificationsDeLaNote(verifications: readonly Verification[], deversementAFournir = false): VerificationNote[] {
   return verifications
     .filter((v) => v.applicable || (deversementAFournir && (v.nom === 'Deversement' || v.nom === 'Déversement')))
-    .map((v) => ({ nom: NOM_VERIFICATION[v.nom] ?? v.nom, clause: v.clause, taux: v.applicable ? v.taux : null, ok: v.applicable && v.taux !== null && v.taux <= 1 }));
+    .map((v) => ({ nom: phrase(v.nom === 'Deversement' ? 'Déversement' : v.nom), clause: phrase(v.clause), taux: v.applicable ? v.taux : null, ok: v.applicable && v.taux !== null && v.taux <= 1 }));
 }
 
 /** Note du dernier calcul reussi ; `norme` : le profil normatif employe. */
 export function noteDuCalcul(norme: { nom: string; date: string }, e: EtatNote, cartouche: { projet: string; element: string; date: string }): NoteDeCalcul {
   const m = e.modele;
+  const t = textes().note;
   const [profil, efforts, tranchants, longueurs, diagLT, diagY, diagZ] = blocEntrees(m).lignes;
   const ecran = e.forme === 'symetrique' ? blocs(e.resultat) : blocsNonSymetriques(e.resultat);
   const proprietes = ecran[0].lignes;
@@ -68,16 +56,16 @@ export function noteDuCalcul(norme: { nom: string; date: string }, e: EtatNote, 
     },
     sections: {
       geometrie: [
-        bloc('Profil et longueurs', [profil, longueurs]),
+        bloc(t.profilLongueurs, [profil, longueurs]),
         { type: 'figure', svg: e.dessin, legende: profilGeneral(m).nom },
       ],
-      materiaux: [bloc('Acier', [acier])],
+      materiaux: [bloc(t.acier, [acier])],
       hypotheses: [
-        { type: 'texte', texte: `Profil normatif : ${norme.nom}, données consultées le ${norme.date}.` },
-        bloc('Diagrammes de moments', [diagLT, diagY, diagZ]),
+        { type: 'texte', texte: t.profil(phrase(norme.nom), norme.date) },
+        bloc(t.diagrammes, [diagLT, diagY, diagZ]),
         { type: 'liste', items: hypothesesDeLaNote(e.forme) },
       ],
-      charges: [bloc('Sollicitations de calcul', [efforts, tranchants])],
+      charges: [bloc(t.sollicitations, [efforts, tranchants])],
       // Les blocs de l'ecran, sans le verdict : la note ne conclut pas a la place de l'ingenieur.
       calculs: ecran.filter((b) => b.titre !== 'Verdict').map(calcul),
     },

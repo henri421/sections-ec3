@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="theme-color" content="#f7f7f6" />
+    <link rel="icon" href="../icone.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../icone-192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Steel sections — EN 1993-1-1</title>
+  </head>
+  <body>
+    <nav class="barre" aria-label="suite of tools">
+      <div class="barre-corps">
+        <span class="barre-nom">Aedificium &middot; Steel</span>
+        <div class="barre-actions">
+          <a class="barre-lien" href="https://henri421.github.io/WebAedificium/" target="_blank" rel="noopener">Aedificium suite &#8599;</a>
+          <a class="barre-langue" href="../" hreflang="fr" lang="fr" aria-label="Version française">FR</a>
+        </div>
+      </div>
+    </nav>
+
+    <header>
+      <h1>Steel sections</h1>
+      <p class="sous-titre">
+        Steel sections to EN 1993-1-1: recalculated properties, classification under the actual action effects,
+        cross-section resistances, flexural buckling, lateral-torsional buckling and combined bending (Annex B).
+        I-sections, tubes, angles, channels, and built-up 2L, 2U sections.
+      </p>
+      <p class="avertissement">
+        Recommended values, without National Annex.
+        The elastic critical moment M<sub>cr</sub> is not given by the standard: its expression is outside the standard and flagged as such.
+      </p>
+    </header>
+
+    <main>
+      <section id="saisie" aria-label="input">
+        <form id="formulaire" autocomplete="off">
+          <fieldset>
+            <legend>Section</legend>
+            <label><span>Section</span>
+              <select data-champ="source">
+                <option value="catalogue">rolled section from the catalogue</option>
+                <option value="I-soude">welded I (plate girder)</option>
+                <option value="tube-rectangulaire">rectangular tube</option>
+                <option value="tube-circulaire">circular tube</option>
+                <option value="L">angle (L)</option>
+                <option value="U">channel (UPE, UPN)</option>
+                <option value="2L">two angles back to back (2L)</option>
+                <option value="2U">two channels back to back (2U)</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="corniere">
+              <label><span>Angle</span><select data-champ="nom_corniere"></select></label>
+            </div>
+            <div class="groupe" data-groupe="u">
+              <label><span>Channel</span><select data-champ="nom_u"></select></label>
+            </div>
+            <div class="groupe" data-groupe="accolee">
+              <label><span>Leg against the gusset</span>
+                <select data-champ="accolee">
+                  <option value="h">long leg h</option>
+                  <option value="b">short leg b</option>
+                </select>
+              </label>
+            </div>
+            <div class="groupe" data-groupe="compose">
+              <label><span>Gusset between sections (mm)</span><input type="text" inputmode="decimal" data-champ="ecartement" /></label>
+              <label><span>Spacing of the connections (mm)</span><input type="text" inputmode="decimal" data-champ="espacement" /></label>
+            </div>
+            <div class="groupe" data-groupe="catalogue">
+              <label><span>Section</span>
+                <select data-champ="nom_catalogue"></select>
+              </label>
+            </div>
+            <div class="groupe" data-groupe="hb">
+              <label><span>h (mm)</span><input type="text" inputmode="decimal" data-champ="h" /></label>
+              <label><span>b (mm)</span><input type="text" inputmode="decimal" data-champ="b" /></label>
+            </div>
+            <div class="groupe" data-groupe="soude">
+              <label><span>t<sub>w</sub> (mm)</span><input type="text" inputmode="decimal" data-champ="tw" /></label>
+              <label><span>t<sub>f</sub> (mm)</span><input type="text" inputmode="decimal" data-champ="tf" /></label>
+              <label><span>throat of the welds a (mm)</span><input type="text" inputmode="decimal" data-champ="a" /></label>
+            </div>
+            <div class="groupe" data-groupe="chs">
+              <label><span>d (mm)</span><input type="text" inputmode="decimal" data-champ="d" /></label>
+            </div>
+            <div class="groupe" data-groupe="tube">
+              <label><span>t (mm)</span><input type="text" inputmode="decimal" data-champ="t" /></label>
+              <label><span>Finish</span>
+                <select data-champ="finition">
+                  <option value="chaud">hot finished (EN 10210)</option>
+                  <option value="froid">cold formed (EN 10219)</option>
+                </select>
+              </label>
+            </div>
+            <label><span>Grade</span>
+              <select data-champ="nuance">
+                <option value="S235">S235</option><option value="S275">S275</option><option value="S355">S355</option><option value="S420">S420</option><option value="S460">S460</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Design action effects</legend>
+            <label><span>N<sub>Ed</sub>, compression + (kN)</span><input type="text" inputmode="decimal" data-champ="n" /></label>
+            <label><span>M<sub>y,Ed</sub> (kN.m)</span><input type="text" inputmode="decimal" data-champ="my" /></label>
+            <label><span>M<sub>z,Ed</sub> (kN.m)</span><input type="text" inputmode="decimal" data-champ="mz" /></label>
+            <label><span>V<sub>z,Ed</sub> (kN)</span><input type="text" inputmode="decimal" data-champ="vz" /></label>
+            <label><span>V<sub>y,Ed</sub> (kN)</span><input type="text" inputmode="decimal" data-champ="vy" /></label>
+            <label><span>Diagram of M<sub>y</sub> (C<sub>my</sub>)</span>
+              <select data-champ="diagramme_y">
+                <option value="lineaire">linear (end moments)</option>
+                <option value="repartie">distributed load, simple supports</option>
+                <option value="concentree-milieu">point load at mid-span</option>
+                <option value="mixte-repartie">mixed: end moments + distributed load</option>
+                <option value="mixte-concentree">mixed: end moments + point load</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="lineaire-y">
+              <label><span>&psi;<sub>y</sub>, ratio of the end moments</span><input type="text" inputmode="decimal" data-champ="psi_y" /></label>
+            </div>
+            <div class="groupe" data-groupe="mixte-y">
+              <label><span>M<sub>h</sub>, largest end moment (kN.m)</span><input type="text" inputmode="decimal" data-champ="mh_y" /></label>
+              <label><span>M<sub>s</sub>, span moment of the total diagram (kN.m)</span><input type="text" inputmode="decimal" data-champ="ms_y" /></label>
+            </div>
+            <label><span>Diagram of M<sub>z</sub> (C<sub>mz</sub>)</span>
+              <select data-champ="diagramme_z">
+                <option value="lineaire">linear (end moments)</option>
+                <option value="repartie">distributed load, simple supports</option>
+                <option value="concentree-milieu">point load at mid-span</option>
+                <option value="mixte-repartie">mixed: end moments + distributed load</option>
+                <option value="mixte-concentree">mixed: end moments + point load</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="lineaire-z">
+              <label><span>&psi;<sub>z</sub>, ratio of the end moments</span><input type="text" inputmode="decimal" data-champ="psi_z" /></label>
+            </div>
+            <div class="groupe" data-groupe="mixte-z">
+              <label><span>M<sub>h</sub>, largest end moment (kN.m)</span><input type="text" inputmode="decimal" data-champ="mh_z" /></label>
+              <label><span>M<sub>s</sub>, span moment of the total diagram (kN.m)</span><input type="text" inputmode="decimal" data-champ="ms_z" /></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Member</legend>
+            <label><span>L<sub>cr,y</sub> (m)</span><input type="text" inputmode="decimal" data-champ="lcry" /></label>
+            <label><span>L<sub>cr,z</sub> (m)</span><input type="text" inputmode="decimal" data-champ="lcrz" /></label>
+            <div class="groupe" data-groupe="lcrv">
+              <label><span>L<sub>cr,v</sub>, minor axis of the angle (m)</span><input type="text" inputmode="decimal" data-champ="lcrv" /></label>
+            </div>
+            <div class="groupe" data-groupe="nonsym">
+              <label><span>L<sub>T</sub>, torsional buckling (m)</span><input type="text" inputmode="decimal" data-champ="lt" /></label>
+            </div>
+            <div class="groupe" data-groupe="treillis">
+              <label class="case"><input type="checkbox" data-champ="treillis" /><span>truss angle, at least two bolts (Annex BB.1.2)</span></label>
+            </div>
+            <label><span>Length between lateral restraints (m)</span><input type="text" inputmode="decimal" data-champ="llt" /></label>
+            <label class="case"><input type="checkbox" data-champ="empeche" /><span>compression flange continuously restrained</span></label>
+            <label><span>Moment between restraints</span>
+              <select data-champ="diagramme">
+                <option value="lineaire">linear (end moments)</option>
+                <option value="repartie">distributed load, simple supports</option>
+                <option value="concentree-milieu">point load at mid-span</option>
+              </select>
+            </label>
+            <div class="groupe" data-groupe="lineaire">
+              <label><span>&psi; for lateral-torsional buckling</span><input type="text" inputmode="decimal" data-champ="psi_lt" /></label>
+            </div>
+            <div class="groupe" data-groupe="charge">
+              <label><span>Point of application</span>
+                <select data-champ="point">
+                  <option value="centre">shear centre</option>
+                  <option value="semelle-superieure">top flange (destabilising)</option>
+                  <option value="semelle-inferieure">bottom flange</option>
+                </select>
+              </label>
+            </div>
+            <label><span>Entered M<sub>cr</sub> (kN.m), optional</span><input type="text" inputmode="decimal" data-champ="mcr" placeholder="expression outside the standard" /></label>
+          </fieldset>
+          <p data-role="erreur-saisie" class="erreur" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <div class="colonne">
+        <section id="resultat" aria-label="result">
+          <h2>Result</h2>
+          <p data-role="erreur" class="erreur" role="alert" hidden></p>
+          <div data-role="mcr"></div>
+          <div data-role="verdict"></div>
+          <div data-role="verifications"></div>
+        </section>
+        <section id="profil" aria-label="section">
+          <h2>Section, properties and class</h2>
+          <div class="deux">
+            <div data-role="dessin"></div>
+            <div data-role="proprietes"></div>
+          </div>
+          <div data-role="classification"></div>
+        </section>
+        <section id="instabilites" aria-label="buckling">
+          <h2>Buckling (6.3)</h2>
+          <div data-role="instabilites"></div>
+        </section>
+        <section id="sorties" aria-label="outputs">
+          <h2>Outputs</h2>
+          <label><span>Project</span><input type="text" data-role="projet" /></label>
+          <label><span>Element</span><input type="text" data-role="element" placeholder="empty = section and grade" /></label>
+          <div class="boutons">
+            <button type="button" data-action="exporter-dessin">Section (SVG)</button>
+            <button type="button" data-action="exporter-resultats">Results (CSV)</button>
+            <button type="button" data-action="exporter-note">Calculation note (printable HTML)</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        Out of scope: class 4 of I-sections and tubes (EN 1993-1-5 Section 4); Annex A of 6.3.3; torsion
+        (load away from the shear centre); lateral-torsional buckling of angles without an entered M<sub>cr</sub>; built-up members
+        with spaced chords (6.4); shear buckling beyond the criterion of 6.2.6(6); connections and net section
+        (see assemblages-ec3).
+      </p>
+    </footer>
+
+    <script type="module" src="../src/main.ts"></script>
+  </body>
+</html>

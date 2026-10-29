@@ -4,7 +4,7 @@
  * `vue` et `export`, tous purs.
  */
 
-import { blocsEnTexte, noteDeCalculHtml, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
+import { blocsEnTexte, definirLangue, langueDuDocument, noteDeCalculHtml, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
 import { ec3Recommande, familles, verifierElement, verifierNonSymetrique } from '../../src/index';
 import {
   champsDepuisModele,
@@ -36,11 +36,14 @@ import {
 } from './vue';
 import { STYLES_TRACE } from './export';
 import { noteDuCalcul, type EtatNote } from './note';
+import { textes } from './textes';
 import './style.css';
+
+definirLangue(langueDuDocument(document));
 
 function exige<T extends Element>(selecteur: string): T {
   const trouve = document.querySelector(selecteur);
-  if (trouve === null) throw new Error(`élément absent de la page : ${selecteur}`);
+  if (trouve === null) throw new Error(textes().messages.elementAbsent(selecteur));
   return trouve as T;
 }
 
