@@ -4,6 +4,7 @@
  * `vue` et `export`, tous purs.
  */
 
+import { brancherFeuilles, type BarreFeuilles, type Json } from 'aedificium-ui';
 import { blocsEnTexte, definirLangue, langueDuDocument, noteDeCalculHtml, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
 import { ec3Recommande, familles, verifierElement, verifierNonSymetrique } from '../../src/index';
 import {
@@ -134,7 +135,11 @@ function lireCartouche(): { projet: string; element: string } {
   }
 }
 
+/** Feuilles de calcul d'un projet de la suite : la feuille est le releve des champs. */
+let barre: BarreFeuilles | null = null;
+
 function rafraichir(): void {
+  barre?.signaler();
   const lecture = modeleDepuisChamps(valeursDesChamps());
   if (!lecture.ok) {
     montrer(zones.erreurSaisie, lecture.message);
@@ -220,6 +225,26 @@ exige<HTMLElement>('#sorties').addEventListener('input', () => {
 ecrireModele(modeleParDefaut());
 formulaire.addEventListener('input', rafraichir);
 formulaire.addEventListener('change', rafraichir);
+barre = brancherFeuilles({
+  app: 'sections-ec3',
+  nomApp: exige<HTMLElement>('header h1').textContent ?? 'sections-ec3',
+  conteneur: exige<HTMLElement>('[data-role="feuilles"]'),
+  lire: () => valeursDesChamps() as Json,
+  charger: (d) => {
+    if (d === null) ecrireModele(modeleParDefaut());
+    else {
+      const v = d as Record<string, string>;
+      for (const el of champs()) {
+        const valeur = v[el.getAttribute('data-champ') ?? ''];
+        if (valeur === undefined) continue;
+        if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = valeur === 'oui';
+        else el.value = valeur;
+      }
+    }
+    rafraichir();
+  },
+});
+
 rafraichir();
 
 if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {

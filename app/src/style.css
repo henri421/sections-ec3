@@ -57,6 +57,7 @@ body {
 }
 
 header,
+.feuilles,
 main,
 footer {
   max-width: 68rem;
@@ -440,3 +441,11 @@ h3 {
 
 .colonne { display: grid; gap: 1rem; min-width: 0; align-content: start; }
 fieldset.groupe[hidden] { display: none; }
+
+/* Barre des feuilles de calcul (projets de la suite) : alignee sur la page. */
+.feuilles {
+  margin-top: 0.8rem;
+}
+.feuilles:empty {
+  display: none;
+}
