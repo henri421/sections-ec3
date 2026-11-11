@@ -11,6 +11,7 @@ import type { ModeleSaisie } from './form';
 import { profilGeneral } from './form';
 import { avertissementsDeLaNote, blocEntrees, blocs, blocsNonSymetriques } from './vue';
 import { phrase, textes } from './textes';
+import { VERSION_OUTIL } from './version';
 
 /** L'etat que la page garde du dernier calcul reussi. */
 export type EtatNote =
@@ -48,6 +49,7 @@ export function noteDuCalcul(norme: { nom: string; date: string }, e: EtatNote, 
 
   return {
     cartouche: {
+      version: VERSION_OUTIL,
       projet: cartouche.projet,
       element: cartouche.element.trim() === '' ? `${profilGeneral(m).nom}, ${m.nuance}` : cartouche.element,
       date: cartouche.date,

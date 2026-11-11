@@ -13,6 +13,7 @@ import { donneesDepuisModele, donneesNonSymetriquesDepuisModele, modeleParDefaut
 import { avertissementsDeLaNote, blocs, blocsNonSymetriques, dessinProfil } from '../../app/src/vue';
 import { STYLES_TRACE } from '../../app/src/export';
 import { hypothesesDeLaNote, noteDuCalcul, type EtatNote } from '../../app/src/note';
+import { VERSION_OUTIL } from '../../app/src/version';
 
 const P = ec3Recommande();
 const lire = (chemin: string): string => readFileSync(fileURLToPath(new URL(chemin, import.meta.url)), 'utf8');
@@ -37,7 +38,7 @@ const symboles = (els: ElementNote[] | undefined) => blocsDe(els).flatMap((b) =>
 
 describe('cartouche', () => {
   it('projet, element, date, norme et outil', () => {
-    expect(note.cartouche).toEqual({ ...CARTOUCHE, norme: 'EN 1993-1-1:2005', outil: 'sections-ec3' });
+    expect(note.cartouche).toEqual({ ...CARTOUCHE, version: VERSION_OUTIL, norme: 'EN 1993-1-1:2005', outil: 'sections-ec3' });
   });
 
   it('element vide : profil et nuance', () => {
