@@ -27,7 +27,7 @@
         cornières, U, et profils composés 2L, 2U.
       </p>
       <p class="avertissement">
-        Valeurs recommandées, sans annexe nationale.
+        Valeurs recommandées par défaut ; l'annexe nationale luxembourgeoise peut être choisie dans la saisie (valeurs présumées, à vérifier).
         Le moment critique M<sub>cr</sub> n'est pas donné par la norme : son expression est hors norme et signalée comme telle.
       </p>
     </header>
@@ -38,6 +38,17 @@
     <main>
       <section id="saisie" aria-label="saisie">
         <form id="formulaire" autocomplete="off">
+          <fieldset>
+            <legend>Annexe nationale et coefficients</legend>
+            <p class="avertissement" data-role="bandeau-annexe" hidden></p>
+            <label><span>Annexe nationale</span><select data-champ="annexe"></select></label>
+            <label><span>&gamma;<sub>M0</sub>, section (clause 6.1(1))</span><input type="text" inputmode="decimal" data-champ="coef_gamma_M0" /></label>
+            <label><span>&gamma;<sub>M1</sub>, flambement et déversement (clause 6.1(1))</span><input type="text" inputmode="decimal" data-champ="coef_gamma_M1" /></label>
+            <label><span>&eta;, aire de cisaillement (EN 1993-1-5, clause 5.1(2))</span><input type="text" inputmode="decimal" data-champ="coef_eta" /></label>
+            <label><span>&lambda;<sub>LT,0</sub>, plateau du déversement (clause 6.3.2.3(1))</span><input type="text" inputmode="decimal" data-champ="coef_lambda_LT0" /></label>
+            <label><span>&beta;, déversement (clause 6.3.2.3(1))</span><input type="text" inputmode="decimal" data-champ="coef_beta_LT" /></label>
+          </fieldset>
+
           <fieldset>
             <legend>Profil</legend>
             <label><span>Section</span>

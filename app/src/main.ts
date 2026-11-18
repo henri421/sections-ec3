@@ -4,9 +4,10 @@
  * `vue` et `export`, tous purs.
  */
 
-import { brancherFeuilles, type BarreFeuilles, type Json } from 'aedificium-ui';
+import { avertissementAnnexeLu, brancherFeuilles, lireAnnexe, optionsAnnexe, type BarreFeuilles, type Json } from 'aedificium-ui';
 import { blocsEnTexte, definirLangue, langueDuDocument, noteDeCalculHtml, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
-import { ec3Recommande, familles, verifierElement, verifierNonSymetrique } from '../../src/index';
+import { familles, verifierElement, verifierNonSymetrique } from '../../src/index';
+import { COEFS, coefsDeLAnnexe, profilDeCalcul, type Coefs } from './annexe';
 import {
   champsDepuisModele,
   donneesDepuisModele,
@@ -48,13 +49,13 @@ function exige<T extends Element>(selecteur: string): T {
   return trouve as T;
 }
 
-const PROFIL = ec3Recommande();
 const formulaire = exige<HTMLFormElement>('#formulaire');
 const role = (nom: string): HTMLElement => exige<HTMLElement>(`[data-role="${nom}"]`);
 const zones = {
   erreurSaisie: role('erreur-saisie'),
   erreur: role('erreur'),
   mcr: role('mcr'),
+  bandeauAnnexe: role('bandeau-annexe'),
   verdict: role('verdict'),
   verifications: role('verifications'),
   dessin: role('dessin'),
@@ -84,6 +85,15 @@ function ecrireModele(m: ModeleSaisie): void {
     if (nom === null || v[nom] === undefined) continue;
     if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = v[nom] === 'oui';
     else el.value = v[nom];
+  }
+}
+
+/** Ecrit les coefficients d'une annexe dans leurs champs (annexe changee). */
+function ecrireCoefs(coefs: Coefs): void {
+  const v = champsDepuisModele({ ...modeleParDefaut(), coefs });
+  for (const k of COEFS) {
+    const el = formulaire.querySelector<HTMLInputElement>(`[data-champ="coef_${k}"]`);
+    if (el !== null) el.value = v[`coef_${k}`];
   }
 }
 
@@ -149,10 +159,13 @@ function rafraichir(): void {
   const m = lecture.modele;
   ajusterLesGroupes(m);
   try {
+    const profil = profilDeCalcul(m.annexe, m.coefs);
+    const avertissementLu = m.annexe === 'lu' ? avertissementAnnexeLu() : '';
+    montrer(zones.bandeauAnnexe, avertissementLu === '' ? null : avertissementLu);
     const dessin = dessinProfil(profilGeneral(m));
     zones.dessin.innerHTML = dessin;
     if (estNonSymetrique(m)) {
-      const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), PROFIL);
+      const r = verifierNonSymetrique(donneesNonSymetriquesDepuisModele(m), profil);
       zones.mcr.innerHTML = bandeauMcr(r) + bandeauNonSymetrique(r);
       zones.verdict.innerHTML = verdictHtml(r);
       zones.verifications.innerHTML = tableHtml(lignesVerifications(r));
@@ -161,7 +174,7 @@ function rafraichir(): void {
       zones.instabilites.innerHTML = tableHtml(lignesInstabiliteNonSymetrique(r));
       etat = { forme: 'non-symetrique', modele: m, resultat: r, dessin };
     } else {
-      const r = verifierElement(donneesDepuisModele(m), PROFIL);
+      const r = verifierElement(donneesDepuisModele(m), profil);
       zones.mcr.innerHTML = bandeauMcr(r);
       zones.verdict.innerHTML = verdictHtml(r);
       zones.verifications.innerHTML = tableHtml(lignesVerifications(r));
@@ -192,7 +205,7 @@ document.addEventListener('click', (ev) => {
     ouvrirOuTelecharger(
       `${nom}-note.html`,
       noteDeCalculHtml(
-        noteDuCalcul(PROFIL, e, {
+        noteDuCalcul(profilDeCalcul(e.modele.annexe, e.modele.coefs), e, {
           projet: champProjet.value,
           element: champElement.value,
           date: new Date().toISOString().slice(0, 10),
@@ -222,7 +235,14 @@ exige<HTMLElement>('#sorties').addEventListener('input', () => {
   }
 });
 
+exige<HTMLSelectElement>('[data-champ="annexe"]').innerHTML = optionsAnnexe('recommande');
 ecrireModele(modeleParDefaut());
+// Changer d'annexe repremplit ses coefficients ; chacun reste modifiable ensuite.
+formulaire.addEventListener('change', (ev) => {
+  const cible = ev.target;
+  if (!(cible instanceof HTMLSelectElement) || cible.dataset.champ !== 'annexe') return;
+  ecrireCoefs(coefsDeLAnnexe(lireAnnexe(cible.value)));
+});
 formulaire.addEventListener('input', rafraichir);
 formulaire.addEventListener('change', rafraichir);
 barre = brancherFeuilles({
@@ -231,8 +251,9 @@ barre = brancherFeuilles({
   conteneur: exige<HTMLElement>('[data-role="feuilles"]'),
   lire: () => valeursDesChamps() as Json,
   charger: (d) => {
-    if (d === null) ecrireModele(modeleParDefaut());
-    else {
+    // Les valeurs par defaut d'abord : un ancien fichier ne reprend que les champs qu'il contient.
+    ecrireModele(modeleParDefaut());
+    if (d !== null) {
       const v = d as Record<string, string>;
       for (const el of champs()) {
         const valeur = v[el.getAttribute('data-champ') ?? ''];

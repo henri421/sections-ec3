@@ -5,8 +5,9 @@
  * CSV : memes blocs que l'ecran, meme dessin, jamais redessine.
  */
 
-import type { BlocResultat, ElementNote, LigneResultat, NoteDeCalcul, VerificationNote } from 'aedificium-ui';
-import type { ResultatElement, ResultatNonSymetrique, Verification } from '../../src/index';
+import { avertissementAnnexeLu, libelleAnnexe, nombreAffiche, traduireSource, type BlocResultat, type ElementNote, type LigneResultat, type NoteDeCalcul, type VerificationNote } from 'aedificium-ui';
+import type { ProfilEc3, ResultatElement, ResultatNonSymetrique, Verification } from '../../src/index';
+import { COEFS, SYMBOLES } from './annexe';
 import type { ModeleSaisie } from './form';
 import { profilGeneral } from './form';
 import { avertissementsDeLaNote, blocEntrees, blocs, blocsNonSymetriques } from './vue';
@@ -37,7 +38,7 @@ export function verificationsDeLaNote(verifications: readonly Verification[], de
 }
 
 /** Note du dernier calcul reussi ; `norme` : le profil normatif employe. */
-export function noteDuCalcul(norme: { nom: string; date: string }, e: EtatNote, cartouche: { projet: string; element: string; date: string }): NoteDeCalcul {
+export function noteDuCalcul(norme: ProfilEc3, e: EtatNote, cartouche: { projet: string; element: string; date: string }): NoteDeCalcul {
   const m = e.modele;
   const t = textes().note;
   const [profil, efforts, tranchants, longueurs, diagLT, diagY, diagZ] = blocEntrees(m).lignes;
@@ -53,7 +54,7 @@ export function noteDuCalcul(norme: { nom: string; date: string }, e: EtatNote, 
       projet: cartouche.projet,
       element: cartouche.element.trim() === '' ? `${profilGeneral(m).nom}, ${m.nuance}` : cartouche.element,
       date: cartouche.date,
-      norme: 'EN 1993-1-1:2005',
+      norme: m.annexe === 'lu' ? 'EN 1993-1-1:2005, ILNAS-EN 1993-1-1/AN-LU:2020' : 'EN 1993-1-1:2005',
       outil: 'sections-ec3',
     },
     sections: {
@@ -65,6 +66,12 @@ export function noteDuCalcul(norme: { nom: string; date: string }, e: EtatNote, 
       hypotheses: [
         { type: 'texte', texte: t.profil(phrase(norme.nom), norme.date) },
         bloc(t.diagrammes, [diagLT, diagY, diagZ]),
+        {
+          type: 'tableau',
+          titre: `${t.coefficients} : ${libelleAnnexe(m.annexe)}`,
+          entetes: t.entetesCoefs,
+          lignes: COEFS.map((k) => [SYMBOLES[k], t.libellesCoefs[k], nombreAffiche(norme[k].valeur, 4), phrase(traduireSource(norme[k].source))]),
+        },
         { type: 'liste', items: hypothesesDeLaNote(e.forme) },
       ],
       charges: [bloc(t.sollicitations, [efforts, tranchants])],
@@ -72,6 +79,7 @@ export function noteDuCalcul(norme: { nom: string; date: string }, e: EtatNote, 
       calculs: ecran.filter((b) => b.titre !== 'Verdict').map(calcul),
     },
     verifications: verificationsDeLaNote(e.resultat.verifications, e.forme === 'non-symetrique' && e.resultat.deversement.aFournir),
-    avertissements: avertissementsDeLaNote(e),
+    // Annexe luxembourgeoise non lue : son avertissement en tete, comme a l'ecran.
+    avertissements: [...(m.annexe === 'lu' && avertissementAnnexeLu() !== '' ? [avertissementAnnexeLu()] : []), ...avertissementsDeLaNote(e)],
   };
 }

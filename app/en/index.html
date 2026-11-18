@@ -27,7 +27,7 @@
         I-sections, tubes, angles, channels, and built-up 2L, 2U sections.
       </p>
       <p class="avertissement">
-        Recommended values, without National Annex.
+        Recommended values by default; the Luxembourg National Annex can be chosen in the input (presumed values, to be checked).
         The elastic critical moment M<sub>cr</sub> is not given by the standard: its expression is outside the standard and flagged as such.
       </p>
     </header>
@@ -38,6 +38,17 @@
     <main>
       <section id="saisie" aria-label="input">
         <form id="formulaire" autocomplete="off">
+          <fieldset>
+            <legend>National Annex and factors</legend>
+            <p class="avertissement" data-role="bandeau-annexe" hidden></p>
+            <label><span>National Annex</span><select data-champ="annexe"></select></label>
+            <label><span>&gamma;<sub>M0</sub>, cross-section (clause 6.1(1))</span><input type="text" inputmode="decimal" data-champ="coef_gamma_M0" /></label>
+            <label><span>&gamma;<sub>M1</sub>, buckling and lateral-torsional buckling (clause 6.1(1))</span><input type="text" inputmode="decimal" data-champ="coef_gamma_M1" /></label>
+            <label><span>&eta;, shear area (EN 1993-1-5, clause 5.1(2))</span><input type="text" inputmode="decimal" data-champ="coef_eta" /></label>
+            <label><span>&lambda;<sub>LT,0</sub>, lateral-torsional buckling plateau (clause 6.3.2.3(1))</span><input type="text" inputmode="decimal" data-champ="coef_lambda_LT0" /></label>
+            <label><span>&beta;, lateral-torsional buckling (clause 6.3.2.3(1))</span><input type="text" inputmode="decimal" data-champ="coef_beta_LT" /></label>
+          </fieldset>
+
           <fieldset>
             <legend>Section</legend>
             <label><span>Section</span>

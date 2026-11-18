@@ -93,20 +93,29 @@ const FR = {
       'Propriétés recalculées à partir des dimensions nominales ; aucune classe stockée.',
       'Semelles classées en compression uniforme, du côté de la sécurité.',
       "Facteurs k_ij de l'annexe B du §6.3.3 ; C_m pour des moments linéaires.",
-      "Valeurs recommandées de l'EN 1993-1-1 ; aucune annexe nationale codée.",
+      "Coefficients de l'annexe choisie, tableau ci-dessus ; aucune autre annexe nationale codée.",
     ],
     hypothesesNonSym: [
       'Propriétés recalculées sur le contour ; I_t, I_w et centre de cisaillement des profils laminés repris du producteur.',
       'Classe 4 : section efficace unique, toutes parois en compression uniforme (EN 1993-1-5 §4.4).',
       'Interaction N-M de section par le critère linéaire (6.2), (6.44) en classe 4.',
       'Annexe B du §6.3.3 étendue aux cornières, U et 2L, hors de son domaine.',
-      "Valeurs recommandées de l'EN 1993-1-1 ; aucune annexe nationale codée.",
+      "Coefficients de l'annexe choisie, tableau ci-dessus ; aucune autre annexe nationale codée.",
     ],
     profilLongueurs: 'Profil et longueurs',
     acier: 'Acier',
     profil: (nom: string, date: string): string => `Profil normatif : ${nom}, données consultées le ${date}.`,
     diagrammes: 'Diagrammes de moments',
     sollicitations: 'Sollicitations de calcul',
+    coefficients: "Coefficients de l'annexe nationale",
+    entetesCoefs: ['Symbole', 'Coefficient', 'Valeur', 'Source'],
+    libellesCoefs: {
+      gamma_M0: 'coefficient partiel de résistance des sections',
+      gamma_M1: 'coefficient partiel de résistance au flambement et au déversement',
+      eta: "coefficient η de l'aire de cisaillement",
+      lambda_LT0: 'plateau λ_LT,0 du déversement',
+      beta_LT: 'coefficient β du déversement',
+    } as Record<string, string>,
   },
   saisie: {
     valeurInattendue: (nom: string, x: string): string => `Valeur inattendue pour ${nom} : « ${x} ».`,
@@ -116,6 +125,7 @@ const FR = {
   messages: {
     elementAbsent: (s: string): string => `élément absent de la page : ${s}`,
     nouvelleVersion: 'Une nouvelle version est disponible. Recharger maintenant ?',
+    imposee: (valeur: string, source: string): string => `valeur imposée par l’utilisateur, au lieu de ${valeur} ; ${source}`,
   },
 };
 
@@ -200,20 +210,29 @@ const EN: Textes = {
       'Properties recalculated from the nominal dimensions; no stored class.',
       'Flanges classified in uniform compression, on the safe side.',
       'Factors k_ij of Annex B of 6.3.3; C_m for linear moments.',
-      'Recommended values of EN 1993-1-1; no National Annex coded.',
+      'Coefficients of the chosen annex, table above; no other National Annex coded.',
     ],
     hypothesesNonSym: [
       'Properties recalculated on the outline; I_t, I_w and shear centre of rolled sections taken from the producer.',
       'Class 4: single effective section, all plates in uniform compression (EN 1993-1-5 4.4).',
       'N-M interaction of the section by the linear criterion (6.2), (6.44) in class 4.',
       'Annex B of 6.3.3 extended to angles, channels and 2L, outside its scope.',
-      'Recommended values of EN 1993-1-1; no National Annex coded.',
+      'Coefficients of the chosen annex, table above; no other National Annex coded.',
     ],
     profilLongueurs: 'Section and lengths',
     acier: 'Steel',
     profil: (nom, date) => `Code profile: ${nom}, data checked on ${date}.`,
     diagrammes: 'Bending moment diagrams',
     sollicitations: 'Design action effects',
+    coefficients: 'National Annex factors',
+    entetesCoefs: ['Symbol', 'Factor', 'Value', 'Source'],
+    libellesCoefs: {
+      gamma_M0: 'partial factor for resistance of cross-sections',
+      gamma_M1: 'partial factor for buckling and lateral-torsional buckling resistance',
+      eta: 'factor η of the shear area',
+      lambda_LT0: 'plateau λ_LT,0 of lateral-torsional buckling',
+      beta_LT: 'factor β of lateral-torsional buckling',
+    } as Record<string, string>,
   },
   saisie: {
     valeurInattendue: (nom, x) => `Unexpected value for ${nom}: “${x}”.`,
@@ -223,6 +242,7 @@ const EN: Textes = {
   messages: {
     elementAbsent: (s) => `element missing from the page: ${s}`,
     nouvelleVersion: 'A new version is available. Reload now?',
+    imposee: (valeur, source) => `value imposed by the user, instead of ${valeur}; ${source}`,
   },
 };
 
@@ -394,6 +414,7 @@ const MORCEAUX: ReadonlyArray<readonly [string, string]> = [
   [', valeur minimale recommandée', ', minimum recommended value'],
   [', valeur recommandée', ', recommended value'],
   ['valeur recommandée', 'recommended value'],
+  ['clause non précisée', 'clause not specified'],
   ['acier ≤', 'steel ≤'],
   ["choix laissé à l'Annex nationale ; Annex B retenue par défaut par l'outil", 'choice left to the National Annex; Annex B adopted by default by the tool'],
   ['section saisie', 'entered section'],
@@ -428,6 +449,7 @@ const morceaux = (t: string): string => MORCEAUX.reduce((s, [fr, en]) => s.split
 
 const EXACTES: Record<string, string> = {
   'Eurocode 3, valeurs recommandées': 'Eurocode 3, recommended values',
+  'Eurocode 3, Luxembourg, valeurs présumées (AN-LU:2020, à vérifier)': 'Eurocode 3, Luxembourg, presumed values (AN-LU:2020, to be checked)',
   'Aucun effort normal.': 'No axial force.',
   'Aucun effort tranchant selon z.': 'No shear force along z.',
   'Aucun effort tranchant selon y.': 'No shear force along y.',

@@ -5,8 +5,9 @@
  * efforts en kN, moments en kN.m.
  */
 
-import { langueCourante, lireNombre } from 'aedificium-ui';
+import { langueCourante, lireAnnexe, lireNombre, type AnnexeNationale } from 'aedificium-ui';
 import { textes } from './textes';
+import { COEFS, coefsDeLAnnexe, type Coefs } from './annexe';
 import type { DiagrammeCm, DonneesElement, DonneesNonSymetriques, Nuance, Profil, ProfilDoublementSymetrique } from '../../src/index';
 import { corniereCatalogue, estDoublementSymetrique, profilCatalogue, profilUCatalogue } from '../../src/index';
 
@@ -61,6 +62,10 @@ export interface ModeleSaisie {
   psiZ: number;
   MhZ: number;
   MsZ: number;
+  /** Annexe nationale choisie (lot E) : valeurs recommandees ou Luxembourg. */
+  annexe: AnnexeNationale;
+  /** Coefficients de l'annexe, prerempli et modifiables un par un. */
+  coefs: Coefs;
 }
 
 export type TypeDiagramme = 'lineaire' | 'repartie' | 'concentree-milieu';
@@ -124,6 +129,8 @@ export function modeleParDefaut(): ModeleSaisie {
     psiZ: 1,
     MhZ: 0,
     MsZ: 0,
+    annexe: 'recommande',
+    coefs: coefsDeLAnnexe('recommande'),
   };
 }
 
@@ -203,6 +210,9 @@ export function modeleDepuisChamps(v: Record<string, string>): Lecture {
         psiZ: nombre(v, 'psi_z', diagrammeZ === 'lineaire' || mixteZ, d.psiZ),
         MhZ: nombre(v, 'mh_z', mixteZ, d.MhZ),
         MsZ: nombre(v, 'ms_z', mixteZ, d.MsZ),
+        annexe: lireAnnexe(v['annexe']),
+        // Un ancien fichier, sans champs de coefficients, garde les valeurs de l'annexe par defaut.
+        coefs: Object.fromEntries(COEFS.map((k) => [k, nombre(v, `coef_${k}`, v[`coef_${k}`] !== undefined, d.coefs[k])])) as Coefs,
       },
     };
   } catch (e) {
@@ -254,6 +264,8 @@ export function champsDepuisModele(m: ModeleSaisie): Record<string, string> {
     psi_z: n(m.psiZ),
     mh_z: n(m.MhZ),
     ms_z: n(m.MsZ),
+    annexe: m.annexe,
+    ...Object.fromEntries(COEFS.map((k) => [`coef_${k}`, n(m.coefs[k])])),
   };
 }
 
