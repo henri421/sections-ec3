@@ -5,7 +5,7 @@
  */
 
 import { avertissementAnnexeLu, brancherFeuilles, lireAnnexe, optionsAnnexe, type BarreFeuilles, type Json } from 'aedificium-ui';
-import { blocsEnTexte, definirLangue, langueDuDocument, noteDeCalculHtml, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
+import { blocsEnTexte, definirLangue, langueDuDocument, noteDeCalculHtml, telechargerNotePdf, notationTexte, ouvrirOuTelecharger, resultatsEnCsv, svgAutonome, telecharger } from 'aedificium-ui';
 import { familles, verifierElement, verifierNonSymetrique } from '../../src/index';
 import { COEFS, coefsDeLAnnexe, profilDeCalcul, type Coefs } from './annexe';
 import {
@@ -201,18 +201,16 @@ document.addEventListener('click', (ev) => {
     telecharger(`${nom}.svg`, svgAutonome(e.dessin, STYLES_TRACE), 'image/svg+xml;charset=utf-8');
   } else if (action === 'exporter-resultats') {
     telecharger(`${nom}-resultats.csv`, resultatsEnCsv(blocsEnTexte([blocEntrees(e.modele), ...resultats])), 'text/csv;charset=utf-8');
-  } else if (action === 'exporter-note') {
-    ouvrirOuTelecharger(
-      `${nom}-note.html`,
-      noteDeCalculHtml(
-        noteDuCalcul(profilDeCalcul(e.modele.annexe, e.modele.coefs), e, {
-          projet: champProjet.value,
-          element: champElement.value,
-          date: new Date().toISOString().slice(0, 10),
-        }),
-        STYLES_TRACE
-      )
-    );
+  } else if (action === 'exporter-note' || action === 'exporter-note-pdf') {
+    const pdf = action === 'exporter-note-pdf';
+    const noteCalc = noteDuCalcul(profilDeCalcul(e.modele.annexe, e.modele.coefs), e, {
+      projet: champProjet.value,
+      element: champElement.value,
+      date: new Date().toISOString().slice(0, 10),
+    });
+    // PDF construit au clic ; en cas d'echec, la note HTML prend le relais.
+    if (pdf) void telechargerNotePdf(`${nom}-note.pdf`, noteCalc, STYLES_TRACE).catch(() => ouvrirOuTelecharger(`${nom}-note.html`, noteDeCalculHtml(noteCalc, STYLES_TRACE)));
+    else ouvrirOuTelecharger(`${nom}-note.html`, noteDeCalculHtml(noteCalc, STYLES_TRACE));
   }
 });
 
